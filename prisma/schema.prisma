@@ -1,0 +1,282 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum TravelStyle {
+  BUDGET
+  BALANCED
+  COMFORT
+  LUXURY
+}
+
+enum FoodPreference {
+  VEGETARIAN
+  VEGAN
+  NON_VEGETARIAN
+  LOCAL
+}
+
+enum AccommodationPreference {
+  BUDGET
+  MID_RANGE
+  PREMIUM
+}
+
+enum TransportMode {
+  FLIGHT
+  TRAIN
+  BUS
+}
+
+enum PlanningStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  PARTIAL_SUCCESS
+  FAILED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  trips Trip[]
+}
+
+model Trip {
+  id            String         @id @default(cuid())
+  userId        String
+  origin        String
+  destination   String
+  departureDate DateTime
+  returnDate    DateTime
+  travelers     Int
+  budget        Int
+  status        PlanningStatus @default(PENDING)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  preferences      TripPreference?
+  planningJob      PlanningJob?
+  transportOptions TransportOption[]
+  routes           RouteOption[]
+  hotels           Hotel[]
+  attractions      Attraction[]
+  restaurants      Restaurant[]
+  weather          WeatherData[]
+  itinerary        Itinerary?
+  budgetBreakdown  BudgetBreakdown?
+
+  @@index([userId])
+  @@index([status])
+}
+
+model TripPreference {
+  id                      String                  @id @default(cuid())
+  tripId                  String                  @unique
+  travelStyle             TravelStyle
+  preferredTransport      String[]
+  interests               String[]
+  foodPreference          FoodPreference
+  accommodationPreference AccommodationPreference
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+}
+
+model PlanningJob {
+  id            String         @id @default(cuid())
+  tripId        String         @unique
+  bullJobId     String?
+  status        PlanningStatus @default(PENDING)
+  progress      Json
+  providerNotes String[]
+  error         String?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+}
+
+model TransportOption {
+  id              String        @id @default(cuid())
+  tripId          String
+  externalId      String
+  provider        String
+  mode            TransportMode
+  price           Int
+  durationMinutes Int
+  data            Json
+  createdAt       DateTime      @default(now())
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([tripId])
+  @@index([mode])
+}
+
+model RouteOption {
+  id                   String   @id @default(cuid())
+  tripId               String
+  externalId           String
+  rank                 Int
+  label                String
+  isRecommended        Boolean  @default(false)
+  totalPrice           Int
+  totalDurationMinutes Int
+  transferCount        Int
+  modes                String[]
+  score                Float
+  data                 Json
+  createdAt            DateTime @default(now())
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([tripId])
+  @@index([isRecommended])
+}
+
+model Hotel {
+  id            String   @id @default(cuid())
+  tripId        String
+  externalId    String
+  name          String
+  city          String
+  selected      Boolean  @default(false)
+  pricePerNight Int
+  rating        Float
+  data          Json
+  createdAt     DateTime @default(now())
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([tripId])
+  @@index([city])
+}
+
+model Attraction {
+  id         String   @id @default(cuid())
+  tripId     String
+  externalId String
+  name       String
+  city       String
+  category   String
+  selected   Boolean  @default(false)
+  rating     Float
+  data       Json
+  createdAt  DateTime @default(now())
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([tripId])
+  @@index([city])
+}
+
+model Restaurant {
+  id         String   @id @default(cuid())
+  tripId     String
+  externalId String
+  name       String
+  city       String
+  cuisine    String
+  selected   Boolean  @default(false)
+  rating     Float
+  data       Json
+  createdAt  DateTime @default(now())
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([tripId])
+  @@index([city])
+}
+
+model WeatherData {
+  id        String   @id @default(cuid())
+  tripId    String
+  city      String
+  date      DateTime
+  data      Json
+  createdAt DateTime @default(now())
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([tripId])
+  @@index([city])
+}
+
+model Itinerary {
+  id             String   @id @default(cuid())
+  tripId         String   @unique
+  recommendation String
+  reason         String   @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  trip Trip           @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  days ItineraryDay[]
+}
+
+model ItineraryDay {
+  id          String   @id @default(cuid())
+  itineraryId String
+  dayNumber   Int
+  date        DateTime
+  summary     String
+
+  itinerary  Itinerary          @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+  activities ItineraryActivity[]
+
+  @@index([itineraryId])
+}
+
+model ItineraryActivity {
+  id                String  @id @default(cuid())
+  itineraryDayId    String
+  time              String
+  title             String
+  category          String
+  locationName      String?
+  durationMinutes   Int
+  estimatedCost     Int
+  travelTimeMinutes Int?
+  notes             String?
+
+  day ItineraryDay @relation(fields: [itineraryDayId], references: [id], onDelete: Cascade)
+
+  @@index([itineraryDayId])
+}
+
+model BudgetBreakdown {
+  id                   String   @id @default(cuid())
+  tripId               String   @unique
+  transport            Int
+  accommodation        Int
+  food                 Int
+  activities           Int
+  localTransport       Int
+  miscellaneous        Int
+  totalEstimatedCost   Int
+  userBudget           Int
+  remainingBudget      Int
+  budgetPercentageUsed Float
+  isWithinBudget       Boolean
+  createdAt            DateTime @default(now())
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+}
