@@ -1,0 +1,12 @@
+[
+  { "name": "Bangalore", "cityId": "CTBLR", "type": "city", "lat": 12.9624327, "long": 77.5809502, "aliases": ["Bangalore", "Bengaluru"] },
+  { "name": "Delhi", "cityId": "RGNCR", "locationId": "CTDEL", "type": "region", "lat": 28.6456556, "long": 77.1190043, "aliases": ["Delhi", "New Delhi"] },
+  { "name": "Goa", "cityId": "CTGOI", "type": "city", "lat": 15.35216, "long": 74.10478, "aliases": ["Goa"] },
+  { "name": "Mumbai", "cityId": "RGBOM", "locationId": "CTBOM", "type": "region", "lat": 19.0820457, "long": 72.8914447, "aliases": ["Mumbai"] },
+  { "name": "Chennai", "cityId": "CTMAA", "type": "city", "lat": 13.0315299, "long": 80.181208, "aliases": ["Chennai"] },
+  { "name": "Hyderabad", "cityId": "CTHYDERA", "type": "city", "lat": 17.4117827, "long": 78.4588628, "aliases": ["Hyderabad"] },
+  { "name": "Pune", "cityId": "RGPNQ", "locationId": "CTPNQ", "type": "region", "lat": 18.5231286, "long": 73.8483872, "aliases": ["Pune"] },
+  { "name": "Kolkata", "cityId": "CTCCU", "type": "city", "lat": 22.6040986, "long": 88.4535337, "aliases": ["Kolkata", "Calcutta"] },
+  { "name": "Ahmedabad", "cityId": "CTAMD", "type": "city", "lat": 23.0283969, "long": 72.5761537, "aliases": ["Ahmedabad"] },
+  { "name": "Jaipur", "cityId": "CTJAI", "type": "city", "lat": 26.885223, "long": 75.8096825, "aliases": ["Jaipur"] }
+]

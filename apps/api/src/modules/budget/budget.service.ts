@@ -7,32 +7,35 @@ import {
   type RouteOption,
   type TripPlanningRequest,
 } from "@nexttour/shared";
-import {
-  createFallbackAttraction,
-  createFallbackHotel,
-  createFallbackRestaurant,
-  createFallbackRoute,
-} from "../planning/fallbacks";
 import { searchAttractions, searchHotels, searchRestaurants } from "../places/places.service";
 import { travelRouteService } from "../travel-route/travel-route.service";
 
 export class BudgetService {
+  /**
+   * `selectedRoute` and `selectedHotel` are optional: when a provider returns nothing
+   * the corresponding line contributes 0 rather than being filled with a placeholder,
+   * so the total is a genuine partial estimate instead of a fabricated one.
+   */
   calculate(
     request: TripPlanningRequest,
-    selectedRoute: RouteOption,
-    selectedHotel: Hotel,
+    selectedRoute: RouteOption | undefined,
+    selectedHotel: Hotel | undefined,
     attractions: Attraction[],
     restaurants: Restaurant[],
   ): BudgetBreakdown {
     const dayCount = dateDifferenceInDays(request.departureDate, request.returnDate);
     const roomCount = Math.max(1, Math.ceil(request.travelers / 2));
     const selectedRestaurants = restaurants.slice(0, Math.max(1, Math.min(dayCount, restaurants.length)));
+    // Guard the division: with no restaurants this would otherwise be NaN and poison
+    // every downstream total.
     const averageMealCost =
-      selectedRestaurants.reduce((total, restaurant) => total + restaurant.mealCostPerPerson, 0) /
-      selectedRestaurants.length;
+      selectedRestaurants.length > 0
+        ? selectedRestaurants.reduce((total, restaurant) => total + restaurant.mealCostPerPerson, 0) /
+          selectedRestaurants.length
+        : 0;
 
-    const transport = selectedRoute.totalPrice * request.travelers;
-    const accommodation = selectedHotel.pricePerNight * dayCount * roomCount;
+    const transport = (selectedRoute?.totalPrice ?? 0) * request.travelers;
+    const accommodation = (selectedHotel?.pricePerNight ?? 0) * dayCount * roomCount;
     const food = Math.round(averageMealCost * request.travelers * dayCount);
     const activities = attractions
       .slice(0, Math.min(dayCount * 2, attractions.length))
@@ -42,7 +45,8 @@ export class BudgetService {
     const totalEstimatedCost =
       transport + accommodation + food + activities + localTransport + miscellaneous;
     const remainingBudget = request.budget - totalEstimatedCost;
-    const budgetPercentageUsed = Math.round((totalEstimatedCost / request.budget) * 1000) / 10;
+    const budgetPercentageUsed =
+      request.budget > 0 ? Math.round((totalEstimatedCost / request.budget) * 1000) / 10 : 0;
 
     return {
       transport,
@@ -91,13 +95,6 @@ export class BudgetService {
       }),
     ]);
 
-    const route = routeSearch.routes[0] ?? createFallbackRoute(request);
-    const hotel = hotels[0] ?? createFallbackHotel(request.destination);
-    const attractionList =
-      attractions.length > 0 ? attractions : [createFallbackAttraction(request.destination)];
-    const restaurantList =
-      restaurants.length > 0 ? restaurants : [createFallbackRestaurant(request.destination)];
-
-    return this.calculate(request, route, hotel, attractionList, restaurantList);
+    return this.calculate(request, routeSearch.routes[0], hotels[0], attractions, restaurants);
   }
 }

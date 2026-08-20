@@ -5,14 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { LogOut, Map, PlaneTakeoff, Plus } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-
-interface CurrentUserResponse {
-  user?: {
-    id: string;
-    name: string;
-    email: string;
-  };
-}
+import type { CurrentUserResponse } from "@/types/trips";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { ACCOMMODATION_PREFERENCES, FOOD_PREFERENCES, INTEREST_CATEGORIES, TRAVEL_STYLES } from "@nexttour/shared";
+import { ACCOMMODATION_PREFERENCES, FOOD_PREFERENCES, TRAVEL_STYLES, type INTEREST_CATEGORIES } from "@nexttour/shared";
 import { requireAuth } from "../../middleware/auth";
 import { ApiError, asyncHandler } from "../../middleware/errors";
 import { searchAttractions, searchHotels, searchRestaurants, type PlaceSearchOptions } from "./places.service";

@@ -1,15 +1,11 @@
-import type { Prisma } from "@prisma/client";
 import {
   dateDifferenceInDays,
   tripDateRange,
   type PlanningProgressStep,
   type ProviderResult,
-  type RouteOption,
   type TransportMode,
-  type TransportOption,
   type TravelStyle,
   type TripPlanningRequest,
-  type WeatherData,
 } from "@nexttour/shared";
 import { env } from "../../config/env";
 import { toJson } from "../../lib/json";
@@ -26,19 +22,6 @@ import { buildRouteOptions } from "../travel-route/services/route-builder.servic
 import { optimizeRoutes } from "../travel-route/services/route-optimizer.service";
 import { getWeatherProvider } from "../weather/providers/weather-provider.registry";
 import { createInitialProgress, markProgress } from "./progress";
-import {
-  createFallbackAttraction,
-  createFallbackHotel,
-  createFallbackRestaurant,
-  createFallbackRoute,
-} from "./fallbacks";
-
-export {
-  createFallbackAttraction,
-  createFallbackHotel,
-  createFallbackRestaurant,
-  createFallbackRoute,
-} from "./fallbacks";
 
 function toDateOnly(date: Date): string {
   return date.toISOString().slice(0, 10);
@@ -190,52 +173,60 @@ export class PlanningService {
       const hotelResult = await collectProvider(this.hotelProvider.name, () =>
         this.hotelProvider.search(request.destination, request),
       );
-      const hotels = hotelResult.data.length > 0 ? hotelResult.data : [createFallbackHotel(request.destination)];
-      progress = await updateProgress(tripId, progress, "hotels", "COMPLETED");
+      const hotels = hotelResult.data;
+      progress = await updateProgress(tripId, progress, "hotels", hotels.length > 0 ? "COMPLETED" : "FAILED");
 
       progress = await updateProgress(tripId, progress, "attractions", "PROCESSING");
       const attractionResult = await collectProvider(this.attractionProvider.name, () =>
         this.attractionProvider.search(request.destination, request),
       );
-      const attractions =
-        attractionResult.data.length > 0 ? attractionResult.data : [createFallbackAttraction(request.destination)];
-      progress = await updateProgress(tripId, progress, "attractions", "COMPLETED");
+      const attractions = attractionResult.data;
+      progress = await updateProgress(
+        tripId, progress, "attractions", attractions.length > 0 ? "COMPLETED" : "FAILED",
+      );
 
       progress = await updateProgress(tripId, progress, "restaurants", "PROCESSING");
       const restaurantResult = await collectProvider(this.restaurantProvider.name, () =>
         this.restaurantProvider.search(request.destination, request),
       );
-      const restaurants =
-        restaurantResult.data.length > 0 ? restaurantResult.data : [createFallbackRestaurant(request.destination)];
-      progress = await updateProgress(tripId, progress, "restaurants", "COMPLETED");
+      const restaurants = restaurantResult.data;
+      progress = await updateProgress(
+        tripId, progress, "restaurants", restaurants.length > 0 ? "COMPLETED" : "FAILED",
+      );
 
       progress = await updateProgress(tripId, progress, "weather", "PROCESSING");
       const weatherResult = await collectProvider(this.weatherProvider.name, () =>
         this.weatherProvider.getForecast(request.destination, tripDateRange(request.departureDate, request.returnDate)),
       );
       const weather = weatherResult.data;
-      progress = await updateProgress(tripId, progress, "weather", "COMPLETED");
+      progress = await updateProgress(tripId, progress, "weather", weather.length > 0 ? "COMPLETED" : "FAILED");
 
       progress = await updateProgress(tripId, progress, "routes", "PROCESSING");
       const routeCandidates = buildRouteOptions(transportOptions, request, env.MIN_TRANSFER_MINUTES);
       const routeOptions = optimizeRoutes(routeCandidates, request);
-      const plannedRoutes = routeOptions.length > 0 ? routeOptions : [createFallbackRoute(request)];
-      const selectedRoute = plannedRoutes[0] ?? createFallbackRoute(request);
-      progress = await updateProgress(tripId, progress, "routes", "COMPLETED");
+      const plannedRoutes = routeOptions;
+      const selectedRoute = plannedRoutes[0];
+      progress = await updateProgress(
+        tripId, progress, "routes", plannedRoutes.length > 0 ? "COMPLETED" : "FAILED",
+      );
 
-      const selectedHotel = hotels[0] ?? createFallbackHotel(request.destination);
+      const selectedHotel = hotels[0];
       const selectedAttractions = attractions.slice(0, Math.max(8, dateDifferenceInDays(request.departureDate, request.returnDate) * 2));
       const selectedRestaurants = restaurants.slice(0, Math.max(5, dateDifferenceInDays(request.departureDate, request.returnDate)));
 
-      const mapDistances = await Promise.all(
-        selectedAttractions.map(async (attraction) => {
-          const distance = await this.mapProvider.getDistance(
-            { latitude: selectedHotel.latitude, longitude: selectedHotel.longitude },
-            { latitude: attraction.latitude, longitude: attraction.longitude },
-          );
-          return [attraction.id, distance] as const;
-        }),
-      );
+      // Distances are measured from the chosen hotel; with no hotel there is no
+      // origin to measure from, so the itinerary simply goes without them.
+      const mapDistances = selectedHotel
+        ? await Promise.all(
+            selectedAttractions.map(async (attraction) => {
+              const distance = await this.mapProvider.getDistance(
+                { latitude: selectedHotel.latitude, longitude: selectedHotel.longitude },
+                { latitude: attraction.latitude, longitude: attraction.longitude },
+              );
+              return [attraction.id, distance] as const;
+            }),
+          )
+        : [];
       const mapDistancesRecord = Object.fromEntries(mapDistances);
 
       progress = await updateProgress(tripId, progress, "budget", "PROCESSING");
@@ -251,8 +242,8 @@ export class PlanningService {
       progress = await updateProgress(tripId, progress, "itinerary", "PROCESSING");
       const itinerary = await this.aiProvider.generateItinerary({
         request,
-        route: selectedRoute,
-        hotel: selectedHotel,
+        ...(selectedRoute ? { route: selectedRoute } : {}),
+        ...(selectedHotel ? { hotel: selectedHotel } : {}),
         attractions: selectedAttractions,
         restaurants: selectedRestaurants,
         weather,
@@ -272,6 +263,21 @@ export class PlanningService {
       if (this.aiProvider.lastFallbackReason) {
         notes.push(`AI: ${this.aiProvider.lastFallbackReason}`);
       }
+
+      // A provider can succeed and still return nothing (no flights on the route, no
+      // buses that far out). Record that explicitly so the UI can show an honest empty
+      // state rather than silently omitting the section.
+      const emptySections: Array<[string, boolean]> = [
+        ["No transport routes were found for these dates", plannedRoutes.length === 0],
+        ["No hotels were found for this destination", hotels.length === 0],
+        ["No attractions were found for this destination", attractions.length === 0],
+        ["No restaurants were found for this destination", restaurants.length === 0],
+        ["No weather forecast is available for these dates", weather.length === 0],
+      ];
+      for (const [message, isEmpty] of emptySections) {
+        if (isEmpty) notes.push(message);
+      }
+
       const finalStatus = notes.length > 0 ? "PARTIAL_SUCCESS" : "COMPLETED";
 
       await prisma.$transaction(
@@ -319,7 +325,7 @@ export class PlanningService {
             externalId: hotel.id,
             name: hotel.name,
             city: hotel.city,
-            selected: hotel.id === selectedHotel.id,
+            selected: hotel.id === selectedHotel?.id,
             pricePerNight: hotel.pricePerNight,
             rating: hotel.rating,
             data: toJson(hotel),

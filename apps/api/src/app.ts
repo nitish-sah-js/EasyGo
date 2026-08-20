@@ -35,7 +35,19 @@ export function createApp() {
   app.use(cookieParser());
 
   app.get("/health", (_request, response) => {
-    response.json({ status: "ok", mode: env.TRAVEL_DATA_MODE, ai: env.AI_PROVIDER });
+    response.json({
+      status: "ok",
+      ai: env.AI_PROVIDER,
+      providers: {
+        flights: "SKY_SCRAPPER",
+        trains: "REDBUS_RAILWAYS",
+        buses: "REDBUS_BUSES",
+        hotels: "REDBUS_HOTELS",
+        places: "GOOGLE_PLACES",
+        weather: "OPEN_METEO",
+        maps: "HAVERSINE",
+      },
+    });
   });
 
   app.use("/api/auth", authRoutes);

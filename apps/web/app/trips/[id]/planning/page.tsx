@@ -10,10 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { apiFetch } from "@/lib/api";
 import { statusLabel } from "@/lib/utils";
-import { startTripPlanning } from "@/services/trips";
-import type { TripStatusResponse } from "@/types/trips";
+import { getTripStatus, startTripPlanning } from "@/services/trips";
 
 function isTerminal(status?: PlanningStatus) {
   return status === "COMPLETED" || status === "PARTIAL_SUCCESS" || status === "FAILED";
@@ -25,7 +23,7 @@ export default function PlanningPage() {
   const queryClient = useQueryClient();
   const { data, error } = useQuery({
     queryKey: ["trip-status", params.id],
-    queryFn: () => apiFetch<TripStatusResponse>(`/api/trips/${params.id}/status`),
+    queryFn: () => getTripStatus(params.id),
     refetchInterval: (query) => (isTerminal(query.state.data?.status) ? false : 2_000),
   });
 

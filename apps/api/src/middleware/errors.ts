@@ -23,6 +23,7 @@ export function notFoundHandler(request: Request, _response: Response, next: Nex
   next(new ApiError(404, `Route not found: ${request.method} ${request.path}`));
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Express detects error middleware by arity (4 params)
 export function errorHandler(error: unknown, _request: Request, response: Response, _next: NextFunction) {
   if (error instanceof ZodError) {
     return response.status(422).json({

@@ -1,0 +1,15 @@
+{
+  "ahmedabad": { "id": "551", "name": "Ahmedabad", "aliases": ["ahmedabad"] },
+  "bengaluru": { "id": "122", "name": "Bengaluru", "aliases": ["bengaluru", "bangalore"] },
+  "bhubaneswar": { "id": "69973", "name": "Bhubaneswar", "aliases": ["bhubaneswar"] },
+  "chennai": { "id": "123", "name": "Chennai", "aliases": ["chennai"] },
+  "delhi": { "id": "733", "name": "Delhi", "aliases": ["delhi", "new delhi"] },
+  "dehradun": { "id": "777", "name": "Dehradun", "aliases": ["dehradun"] },
+  "indore": { "id": "313", "name": "Indore", "aliases": ["indore"] },
+  "kolkata": { "id": "69976", "name": "Kolkata", "aliases": ["kolkata", "calcutta"] },
+  "lucknow": { "id": "10", "name": "Lucknow", "aliases": ["lucknow"] },
+  "mumbai": { "id": "462", "name": "Mumbai", "aliases": ["mumbai", "bombay"] },
+  "pune": { "id": "130", "name": "Pune", "aliases": ["pune"] },
+  "tirupati": { "id": "71756", "name": "Tirupati", "aliases": ["tirupati", "tirupathi"] },
+  "vijayawada": { "id": "134", "name": "Vijayawada", "aliases": ["vijayawada"] }
+}

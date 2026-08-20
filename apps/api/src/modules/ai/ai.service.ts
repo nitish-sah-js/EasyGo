@@ -7,12 +7,13 @@ import { env } from "../../config/env";
 import type { AIProvider, ItineraryContext } from "./providers/ai-provider.interface";
 import { GeminiAIProvider } from "./providers/gemini-ai.provider";
 import { GroqAIProvider } from "./providers/groq-ai.provider";
-import { MockAIProvider } from "./providers/mock-ai.provider";
+import { HuggingFaceAIProvider } from "./providers/huggingface-ai.provider";
+import { TemplateAIProvider } from "./providers/template-ai.provider";
 
 export class FallbackAIProvider implements AIProvider {
   readonly name: string;
   lastFallbackReason: string | null = null;
-  private readonly fallback = new MockAIProvider();
+  private readonly fallback = new TemplateAIProvider();
 
   constructor(private readonly primary: AIProvider) {
     this.name = primary.name;
@@ -52,7 +53,7 @@ export class FallbackAIProvider implements AIProvider {
             time: "10:00",
             title: `Explore ${context.request.destination} at leisure`,
             category: "FREE_TIME",
-            locationName: context.hotel.name,
+            ...(context.hotel ? { locationName: context.hotel.name } : {}),
             durationMinutes: 240,
             estimatedCost: 0,
             notes: "Auto-generated because the AI provider was unavailable.",
@@ -76,8 +77,10 @@ export function createAIProvider(): FallbackAIProvider {
       return new FallbackAIProvider(new GeminiAIProvider());
     case "GROQ":
       return new FallbackAIProvider(new GroqAIProvider());
-    case "MOCK":
+    case "HUGGINGFACE":
+      return new FallbackAIProvider(new HuggingFaceAIProvider());
+    case "TEMPLATE":
     default:
-      return new FallbackAIProvider(new MockAIProvider());
+      return new FallbackAIProvider(new TemplateAIProvider());
   }
 }

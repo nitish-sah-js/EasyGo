@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { AuthGuard } from "@/components/auth-guard";
 import { apiFetch } from "@/lib/api";
+import type { PlanTripResponse } from "@/types/trips";
 
 const steps = ["Route", "Dates", "Travelers", "Budget", "Preferences", "Review"] as const;
 
@@ -85,7 +86,7 @@ export default function PlanPage() {
   const [created, setCreated] = useState(false);
   const mutation = useMutation({
     mutationFn: (payload: TripPlanningInput) =>
-      apiFetch<{ tripId: string; jobId: string }>("/api/trips/plan", {
+      apiFetch<PlanTripResponse>("/api/trips/plan", {
         method: "POST",
         body: JSON.stringify(payload),
       }),

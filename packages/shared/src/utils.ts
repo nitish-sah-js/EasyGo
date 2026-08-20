@@ -1,20 +1,14 @@
-import type {
-  Coordinates,
-  LocationPoint,
-  MockTransportRecord,
-  TransportMode,
-  TransportOption,
-} from "./domain";
+import type { Coordinates, LocationPoint, TransportMode, TransportOption } from "./domain";
 
 export const MIN_TRANSFER_MINUTES_DEFAULT = 90;
 
 export const CITY_COORDINATES = {
   Patna: { latitude: 25.5941, longitude: 85.1376, aliases: ["PAT", "PNBE", "Patna"] },
-  Goa: { latitude: 15.2993, longitude: 74.124, aliases: ["GOI", "MAO", "Madgaon", "Goa"] },
-  Delhi: { latitude: 28.6139, longitude: 77.209, aliases: ["DEL", "NDLS", "Delhi"] },
-  Mumbai: { latitude: 19.076, longitude: 72.8777, aliases: ["BOM", "BCT", "Mumbai"] },
-  Bengaluru: { latitude: 12.9716, longitude: 77.5946, aliases: ["BLR", "SBC", "Bengaluru", "Bangalore"] },
-  Kolkata: { latitude: 22.5726, longitude: 88.3639, aliases: ["CCU", "HWH", "Kolkata"] },
+  Goa: { latitude: 15.2993, longitude: 74.124, aliases: ["GOI", "GOX", "MAO", "VSG", "Madgaon", "Panaji", "Panjim", "Goa"] },
+  Delhi: { latitude: 28.6139, longitude: 77.209, aliases: ["DEL", "NDLS", "Delhi", "New Delhi"] },
+  Mumbai: { latitude: 19.076, longitude: 72.8777, aliases: ["BOM", "BCT", "CSTM", "Mumbai", "Bombay"] },
+  Bengaluru: { latitude: 12.9716, longitude: 77.5946, aliases: ["BLR", "SBC", "KJM", "Bengaluru", "Bangalore"] },
+  Kolkata: { latitude: 22.5726, longitude: 88.3639, aliases: ["CCU", "HWH", "Kolkata", "Calcutta"] },
   Jaipur: { latitude: 26.9124, longitude: 75.7873, aliases: ["JAI", "JP", "Jaipur"] },
   Varanasi: { latitude: 25.3176, longitude: 82.9739, aliases: ["VNS", "BSB", "Varanasi"] },
 } as const;
@@ -48,16 +42,38 @@ export function createLocation(city: SupportedCity, code: string, name: string):
   };
 }
 
+/**
+ * Does `location` refer to the place the traveller typed?
+ *
+ * Providers name the same city differently — Sky Scrapper reports Delhi's airport city
+ * as "New Delhi", redBus railways as "H Nizamuddin" with code NDLS. Comparing the
+ * location's city to the resolved city name alone drops perfectly good options, so any
+ * of the location's identifiers (code, name, city) is matched against the full alias
+ * set of the resolved city before falling back to a literal comparison.
+ */
 export function locationsMatch(input: string, location: LocationPoint): boolean {
+  const identifiers = [location.code, location.name, location.city]
+    .filter((value): value is string => Boolean(value))
+    .map((value) => value.trim().toLowerCase());
+
   const inputCity = resolveCityName(input);
-  if (inputCity && location.city === inputCity) {
-    return true;
+  if (inputCity) {
+    if (location.city === inputCity) return true;
+
+    const aliases = new Set(
+      [inputCity, ...CITY_COORDINATES[inputCity].aliases].map((alias) => alias.toLowerCase()),
+    );
+    if (identifiers.some((value) => aliases.has(value))) return true;
+
+    // A provider may return a fuller name for the same place ("Delhi Indira Gandhi
+    // International", "Goa Dabolim"); treat it as a match when an alias is contained.
+    if (identifiers.some((value) => [...aliases].some((alias) => alias.length > 3 && value.includes(alias)))) {
+      return true;
+    }
   }
 
   const normalized = input.trim().toLowerCase();
-  return [location.code, location.name, location.city]
-    .filter((value): value is string => Boolean(value))
-    .some((value) => value.toLowerCase() === normalized);
+  return identifiers.some((value) => value === normalized);
 }
 
 export function cityMatches(city: string, input: string): boolean {
@@ -108,47 +124,6 @@ export function addMinutesToIso(iso: string, minutes: number): string {
 
 export function minutesBetween(startIso: string, endIso: string): number {
   return Math.round((new Date(endIso).getTime() - new Date(startIso).getTime()) / 60_000);
-}
-
-export function materializeTransportRecord(
-  record: MockTransportRecord,
-  departureDate: string,
-  dayOffset = 0,
-): TransportOption {
-  const departureTime = isoAtIndiaClock(departureDate, record.departureClock, dayOffset);
-  const arrivalTime = addMinutesToIso(departureTime, record.durationMinutes);
-
-  return {
-    id: record.id,
-    provider: record.provider,
-    mode: record.mode,
-    origin: record.origin,
-    destination: record.destination,
-    departureTime,
-    arrivalTime,
-    durationMinutes: record.durationMinutes,
-    price: record.price,
-    currency: record.currency,
-    stops: record.stops,
-    ...(record.operator !== undefined ? { operator: record.operator } : {}),
-    ...(record.serviceNumber !== undefined ? { serviceNumber: record.serviceNumber } : {}),
-    ...(record.vehicleType !== undefined ? { vehicleType: record.vehicleType } : {}),
-    segments: [
-      {
-        origin: record.origin,
-        destination: record.destination,
-        departureTime,
-        arrivalTime,
-        mode: record.mode,
-        ...(record.operator !== undefined ? { operator: record.operator } : {}),
-        ...(record.serviceNumber !== undefined ? { serviceNumber: record.serviceNumber } : {}),
-      },
-    ],
-    source: "MOCK",
-    fetchedAt: isoAtIndiaClock(departureDate, "05:00"),
-    ...(record.amenities !== undefined ? { amenities: record.amenities } : {}),
-    ...(record.metadata !== undefined ? { metadata: record.metadata } : {}),
-  };
 }
 
 export function shiftTransportOptionToDeparture(option: TransportOption, departureIso: string) {

@@ -42,8 +42,19 @@ export function MapVisualization({
   attractions: Attraction[];
   restaurants: Restaurant[];
 }) {
-  const destinationLat = hotel?.latitude ?? attractions[0]?.latitude ?? 15.2993;
-  const destinationLng = hotel?.longitude ?? attractions[0]?.longitude ?? 74.124;
+  // Every coordinate comes from a real provider; with none there is nothing
+  // truthful to plot, so the map shows an empty state instead of a placeholder city.
+  const destinationLat = hotel?.latitude ?? attractions[0]?.latitude ?? restaurants[0]?.latitude;
+  const destinationLng = hotel?.longitude ?? attractions[0]?.longitude ?? restaurants[0]?.longitude;
+
+  if (destinationLat === undefined || destinationLng === undefined) {
+    return (
+      <div className="flex aspect-[16/10] min-h-[280px] items-center justify-center rounded-lg border border-dashed border-border bg-slate-50 p-6 text-center text-sm text-slate-600">
+        No mapped locations yet — the hotel and place providers returned no results for this trip.
+      </div>
+    );
+  }
+
   const markers: Marker[] = [
     {
       id: "destination",

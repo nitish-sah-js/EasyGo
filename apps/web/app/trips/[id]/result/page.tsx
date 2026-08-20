@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarDays, Hotel, Loader2, MapPinned, Users } from "lucide-react";
-import { formatInr, type TripResultPayload } from "@nexttour/shared";
+import { formatInr } from "@nexttour/shared";
 import { BudgetBreakdown } from "@/components/budget-breakdown";
 import { ItineraryTimeline } from "@/components/itinerary-timeline";
 import { MapVisualization } from "@/components/map-visualization";
@@ -13,14 +13,22 @@ import { AuthGuard } from "@/components/auth-guard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { apiFetch } from "@/lib/api";
 import { formatDate, statusLabel } from "@/lib/utils";
+import { getTripResult } from "@/services/trips";
+
+function EmptyState({ children }: { children: React.ReactNode }) {
+  return (
+    <Card>
+      <CardContent className="pt-5 text-sm text-slate-600">{children}</CardContent>
+    </Card>
+  );
+}
 
 export default function TripResultPage() {
   const params = useParams<{ id: string }>();
   const { data, isLoading, error } = useQuery({
     queryKey: ["trip-result", params.id],
-    queryFn: () => apiFetch<TripResultPayload>(`/api/trips/${params.id}/result`),
+    queryFn: () => getTripResult(params.id),
   });
 
   if (isLoading) {
@@ -96,7 +104,12 @@ export default function TripResultPage() {
 
       {data.providerMessages.length ? (
         <div className="mb-6 rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-          Some transport or place options are temporarily unavailable. {data.providerMessages.join("; ")}
+          <div className="font-medium">This plan is partial.</div>
+          <ul className="mt-2 list-inside list-disc space-y-1">
+            {data.providerMessages.map((message) => (
+              <li key={message}>{message}</li>
+            ))}
+          </ul>
         </div>
       ) : null}
 
@@ -140,7 +153,14 @@ export default function TripResultPage() {
               </Card>
               <ItineraryTimeline itinerary={data.itinerary} />
             </section>
-          ) : null}
+          ) : (
+            <section className="space-y-3">
+              <h2 className="text-xl font-semibold">Day-wise Itinerary</h2>
+              <EmptyState>
+                No itinerary was generated for this trip. Re-run planning to try again.
+              </EmptyState>
+            </section>
+          )}
         </div>
 
         <aside className="space-y-6">
@@ -155,8 +175,24 @@ export default function TripResultPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm text-slate-600">
-                  <div>{data.hotel.rating} rating · {data.hotel.reviewCount} reviews</div>
-                  <div>{formatInr(data.hotel.pricePerNight)}/night · {data.hotel.distanceFromCenterKm} km from center</div>
+                  <div>
+                    {data.hotel.reviewCount > 0
+                      ? `${data.hotel.rating} rating · ${data.hotel.reviewCount} reviews`
+                      : "Not yet rated"}
+                  </div>
+                  <div>
+                    {formatInr(data.hotel.pricePerNight)}/night
+                    {data.hotel.distanceFromCenterKm > 0
+                      ? ` · ${data.hotel.distanceFromCenterKm} km from center`
+                      : null}
+                  </div>
+                  {data.hotel.priceSource === "ESTIMATE" ? (
+                    <div className="rounded-md bg-amber-50 px-2 py-1 text-xs text-amber-900">
+                      Estimated rate — no live quote was available for these dates.
+                    </div>
+                  ) : (
+                    <div className="text-xs text-emerald-700">Live rate for your dates</div>
+                  )}
                   <div className="flex flex-wrap gap-2">
                     {data.hotel.amenities.map((amenity) => (
                       <Badge key={amenity}>{amenity}</Badge>
@@ -165,7 +201,12 @@ export default function TripResultPage() {
                 </CardContent>
               </Card>
             </section>
-          ) : null}
+          ) : (
+            <section className="space-y-3">
+              <h2 className="text-xl font-semibold">Hotel Recommendation</h2>
+              <EmptyState>No hotels were found for this destination and date range.</EmptyState>
+            </section>
+          )}
 
           {data.budget ? (
             <section className="space-y-3">
@@ -180,6 +221,9 @@ export default function TripResultPage() {
 
           <section className="space-y-3">
             <h2 className="text-xl font-semibold">Tourist Attractions</h2>
+            {data.attractions.length === 0 ? (
+              <EmptyState>No attractions were found for this destination.</EmptyState>
+            ) : (
             <Card>
               <CardContent className="space-y-3 pt-5">
                 {data.attractions.slice(0, 6).map((attraction) => (
@@ -193,10 +237,14 @@ export default function TripResultPage() {
                 ))}
               </CardContent>
             </Card>
+            )}
           </section>
 
           <section className="space-y-3">
             <h2 className="text-xl font-semibold">Restaurants</h2>
+            {data.restaurants.length === 0 ? (
+              <EmptyState>No restaurants were found for this destination.</EmptyState>
+            ) : (
             <Card>
               <CardContent className="space-y-3 pt-5">
                 {data.restaurants.slice(0, 5).map((restaurant) => (
@@ -210,10 +258,16 @@ export default function TripResultPage() {
                 ))}
               </CardContent>
             </Card>
+            )}
           </section>
 
           <section className="space-y-3">
             <h2 className="text-xl font-semibold">Weather</h2>
+            {data.weather.length === 0 ? (
+              <EmptyState>
+                No forecast is available for these dates — they fall outside the 16-day forecast window.
+              </EmptyState>
+            ) : (
             <Card>
               <CardContent className="grid gap-2 pt-5">
                 {data.weather.map((weather) => (
@@ -224,6 +278,7 @@ export default function TripResultPage() {
                 ))}
               </CardContent>
             </Card>
+            )}
           </section>
 
           <section className="space-y-3">

@@ -1,12 +1,11 @@
-import { env } from "../../../config/env";
 import type { MapProvider } from "./map-provider.interface";
-import { MockMapProvider } from "./mock-map.provider";
+import { HaversineMapProvider } from "./haversine-map.provider";
 
+/**
+ * No routing API ships with this integration, so point-to-point distance is computed
+ * geometrically (Haversine) over the real coordinates supplied by Google Places.
+ * The distance is real; the road-travel time derived from it is an estimate.
+ */
 export function getMapProvider(): MapProvider {
-  if (env.TRAVEL_DATA_MODE !== "MOCK") {
-    throw new Error(
-      `TRAVEL_DATA_MODE=${env.TRAVEL_DATA_MODE} is not implemented. Real map providers are not available in this MVP.`,
-    );
-  }
-  return new MockMapProvider();
+  return new HaversineMapProvider();
 }

@@ -12,8 +12,10 @@ import type {
 
 export interface ItineraryContext {
   request: TripPlanningRequest;
-  route: RouteOption;
-  hotel: Hotel;
+  /** Absent when no transport provider returned a usable route for this trip. */
+  route?: RouteOption;
+  /** Absent when no hotel provider returned a property for this destination. */
+  hotel?: Hotel;
   attractions: Attraction[];
   restaurants: Restaurant[];
   weather: WeatherData[];

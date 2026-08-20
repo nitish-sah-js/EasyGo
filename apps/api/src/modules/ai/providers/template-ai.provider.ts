@@ -1,5 +1,4 @@
 import { formatInr, tripDateRange, type ItineraryActivity, type ItineraryDay } from "@nexttour/shared";
-import { throwIfMockProviderDisabled } from "../../../lib/mock-failure";
 import type { AIProvider, ItineraryContext } from "./ai-provider.interface";
 
 function time(hour: number, minute = 0): string {
@@ -15,12 +14,16 @@ function travelTime(label: string, context: ItineraryContext): number {
   return distance?.travelTimeMinutes ?? 25;
 }
 
-export class MockAIProvider implements AIProvider {
-  readonly name = "MOCK_AI";
+/**
+ * Deterministic, rule-based itinerary builder over the *real* places, route and
+ * weather already gathered for the trip. It invents no travel data — it only
+ * schedules what the providers returned. Used as the fallback when the Groq API
+ * is unavailable or rate limited, so planning degrades instead of failing.
+ */
+export class TemplateAIProvider implements AIProvider {
+  readonly name = "TEMPLATE_AI";
 
   async generateItinerary(context: ItineraryContext) {
-    throwIfMockProviderDisabled(this.name);
-
     const dates = tripDateRange(context.request.departureDate, context.request.returnDate);
     const indoorCategories = new Set(["MUSEUM", "CULTURE", "RELIGIOUS", "SHOPPING"]);
     const attractions = [...context.attractions].sort((left, right) => {
@@ -41,28 +44,33 @@ export class MockAIProvider implements AIProvider {
       const activities: ItineraryActivity[] = [];
 
       if (dayIndex === 0) {
-        activities.push({
-          id: `day-${dayIndex + 1}-arrival`,
-          time: time(8),
-          title: `Depart from ${context.request.origin}`,
-          category: "TRANSPORT",
-          ...(context.route.segments[0]?.origin.name
-            ? { locationName: context.route.segments[0].origin.name }
-            : {}),
-          durationMinutes: context.route.totalDurationMinutes,
-          estimatedCost: context.route.totalPrice * context.request.travelers,
-          ...(context.route.recommendationReason ? { notes: context.route.recommendationReason } : {}),
-        });
-        activities.push({
-          id: `day-${dayIndex + 1}-checkin`,
-          time: time(13),
-          title: `Check in at ${context.hotel.name}`,
-          category: "HOTEL",
-          locationName: context.hotel.location,
-          durationMinutes: 45,
-          estimatedCost: context.hotel.pricePerNight,
-          travelTimeMinutes: 30,
-        });
+        const route = context.route;
+        if (route) {
+          activities.push({
+            id: `day-${dayIndex + 1}-arrival`,
+            time: time(8),
+            title: `Depart from ${context.request.origin}`,
+            category: "TRANSPORT",
+            ...(route.segments[0]?.origin.name ? { locationName: route.segments[0].origin.name } : {}),
+            durationMinutes: route.totalDurationMinutes,
+            estimatedCost: route.totalPrice * context.request.travelers,
+            ...(route.recommendationReason ? { notes: route.recommendationReason } : {}),
+          });
+        }
+
+        const hotel = context.hotel;
+        if (hotel) {
+          activities.push({
+            id: `day-${dayIndex + 1}-checkin`,
+            time: time(13),
+            title: `Check in at ${hotel.name}`,
+            category: "HOTEL",
+            locationName: hotel.location,
+            durationMinutes: 45,
+            estimatedCost: hotel.pricePerNight,
+            travelTimeMinutes: 30,
+          });
+        }
       }
 
       if (firstAttraction) {
@@ -129,7 +137,7 @@ export class MockAIProvider implements AIProvider {
           time: time(18),
           title: "Return buffer and checkout",
           category: "FREE_TIME",
-          locationName: context.hotel.name,
+          ...(context.hotel ? { locationName: context.hotel.name } : {}),
           durationMinutes: 90,
           estimatedCost: 0,
           notes: "Keeps the final evening flexible for delays or last-minute shopping.",

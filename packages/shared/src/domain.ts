@@ -80,26 +80,8 @@ export interface TransportOption {
   serviceNumber?: string;
   vehicleType?: string;
   segments: TransportSegment[];
-  source: "MOCK";
+  source: "REAL";
   fetchedAt: string;
-  amenities?: string[];
-  metadata?: Record<string, string | number | boolean | string[]>;
-}
-
-export interface MockTransportRecord {
-  id: string;
-  provider: string;
-  mode: TransportMode;
-  origin: LocationPoint;
-  destination: LocationPoint;
-  departureClock: string;
-  durationMinutes: number;
-  price: number;
-  currency: "INR";
-  stops: number;
-  operator?: string;
-  serviceNumber?: string;
-  vehicleType?: string;
   amenities?: string[];
   metadata?: Record<string, string | number | boolean | string[]>;
 }
@@ -136,7 +118,7 @@ export interface Place {
   rating: number;
   priceLevel?: "BUDGET" | "MID_RANGE" | "PREMIUM";
   estimatedCost?: number;
-  source: "MOCK";
+  source: "REAL";
 }
 
 export interface Hotel extends Place {
@@ -147,6 +129,11 @@ export interface Hotel extends Place {
   roomType: string;
   distanceFromCenterKm: number;
   cancellationPolicy: string;
+  /**
+   * LIVE   — `pricePerNight` is a real quoted nightly rate for the trip dates.
+   * ESTIMATE — derived from a coarse price tier; no provider quoted this room.
+   */
+  priceSource: "LIVE" | "ESTIMATE";
 }
 
 export interface Attraction extends Place {
@@ -177,7 +164,7 @@ export interface WeatherData {
   rainProbability: number;
   humidity: number;
   windSpeed: number;
-  source: "MOCK";
+  source: "REAL";
 }
 
 export interface RouteDistance {

@@ -8,8 +8,8 @@ const SPEED_KMPH = {
   TRAIN: 55,
 } as const;
 
-export class MockMapProvider implements MapProvider {
-  readonly name = "MOCK_MAPS";
+export class HaversineMapProvider implements MapProvider {
+  readonly name = "HAVERSINE_MAPS";
 
   async getDistance(origin: Coordinates, destination: Coordinates): Promise<RouteDistance> {
     return this.getTravelTime(origin, destination, "CAR");
