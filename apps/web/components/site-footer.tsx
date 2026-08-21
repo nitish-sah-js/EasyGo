@@ -17,7 +17,7 @@ export function SiteFooter() {
             <Route className="h-4 w-4" />
           </span>
           <span className="font-bold tracking-tight text-foreground">
-            Next<span className="text-brand-600">Tour</span>
+            Next<span className="text-brand-700">Tour</span>
           </span>
         </Link>
         <nav className="flex flex-wrap gap-x-7 gap-y-2">

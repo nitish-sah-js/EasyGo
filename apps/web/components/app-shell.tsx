@@ -52,7 +52,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Route className="h-5 w-5" />
             </span>
             <span className="text-lg font-bold tracking-tight text-foreground">
-              Next<span className="text-brand-600">Tour</span>
+              Next<span className="text-brand-700">Tour</span>
             </span>
           </Link>
 
@@ -65,8 +65,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   href={link.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "relative px-4 py-2 text-sm font-semibold transition",
-                    active ? "text-brand-700" : "text-muted-foreground hover:text-brand-700",
+                    "relative flex h-11 items-center rounded-[12px] px-4 text-[0.9375rem] font-semibold transition duration-200 ease-out",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                    active ? "text-brand-700" : "text-muted-foreground hover:bg-brand-50 hover:text-brand-700",
                   )}
                 >
                   {link.label}
@@ -84,9 +85,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <button
                   type="button"
                   aria-label="Notifications"
-                  className="hidden h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition hover:bg-brand-100 hover:text-brand-700 sm:flex"
+                  className="hidden h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-brand-100 hover:text-brand-700 active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:flex"
                 >
-                  <Bell className="h-[1.15rem] w-[1.15rem]" />
+                  <Bell className="h-[1.15rem] w-[1.15rem] shrink-0" />
                 </button>
                 <Link href="/plan" className="hidden sm:block">
                   <Button size="sm" shape="pill">
@@ -95,7 +96,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </Link>
                 <span
                   title={user.name}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-brand-200 to-brand-200 text-sm font-bold text-brand-800 ring-2 ring-white"
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-brand-200 to-brand-200 text-sm font-bold text-brand-800 ring-2 ring-white"
                 >
                   {initialsOf(user.name)}
                 </span>
@@ -106,7 +107,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   shape="pill"
                   onClick={() => logoutMutation.mutate()}
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut />
                 </Button>
               </>
             ) : (

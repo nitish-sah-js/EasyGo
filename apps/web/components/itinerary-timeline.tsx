@@ -168,7 +168,7 @@ export function ItineraryTimeline({
                           <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-muted-foreground">
                             {activity.locationName ? (
                               <span className="inline-flex items-center gap-1.5">
-                                <MapPin className="h-3.5 w-3.5 text-brand-600" />
+                                <MapPin className="h-3.5 w-3.5 text-brand-700" />
                                 {activity.locationName}
                               </span>
                             ) : null}
@@ -182,7 +182,7 @@ export function ItineraryTimeline({
                             </span>
                             {activity.travelTimeMinutes ? (
                               <span className="inline-flex items-center gap-1.5">
-                                <Bus className="h-3.5 w-3.5 text-brand-600" />
+                                <Bus className="h-3.5 w-3.5 text-brand-700" />
                                 {formatMinutes(activity.travelTimeMinutes)} travel
                               </span>
                             ) : null}

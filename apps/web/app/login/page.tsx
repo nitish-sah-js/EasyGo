@@ -35,7 +35,7 @@ export default function LoginPage() {
       footer={
         <>
           New here?{" "}
-          <Link href="/register" className="font-semibold text-brand-600 hover:text-brand-700">
+          <Link href="/register" className="font-semibold text-brand-700 hover:text-brand-800">
             Create an account
           </Link>
         </>
@@ -53,8 +53,8 @@ export default function LoginPage() {
             {mutation.error.message}
           </p>
         ) : null}
-        <Button size="lg" className="w-full" disabled={mutation.isPending}>
-          <LogIn className="h-4 w-4" />
+        <Button size="lg" block disabled={mutation.isPending}>
+          <LogIn />
           {mutation.isPending ? "Signing in…" : "Sign in"}
         </Button>
       </form>

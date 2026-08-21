@@ -126,10 +126,23 @@ function logLive(message: string) {
   console.log(`[provider-live] ${message}`);
 }
 
+/**
+ * How long to keep a result. A function is handed the loaded value, so a caller
+ * can hold a good answer for hours while letting an empty one expire in minutes
+ * — otherwise a lookup that came back empty for a fixable reason (an API key
+ * missing an entitlement, a provider having a bad day) stays wrong for the whole
+ * TTL long after the cause is fixed.
+ */
+type CacheTtl<T> = number | ((value: T) => number);
+
+function resolveTtl<T>(ttl: CacheTtl<T>, value: T): number {
+  return typeof ttl === "function" ? ttl(value) : ttl;
+}
+
 export async function cachedProviderResult<T>(
   namespace: string,
   parts: unknown,
-  ttlSeconds: number,
+  ttlSeconds: CacheTtl<T>,
   load: () => Promise<T>,
   options: CacheLogOptions = {},
 ): Promise<T> {
@@ -147,8 +160,8 @@ export async function cachedProviderResult<T>(
 
   const redisPayload = await readRedis(key);
   if (redisPayload) {
-    memoryCache.set(key, { payload: redisPayload, expiresAt: now + ttlSeconds * 1_000 });
     const value = JSON.parse(redisPayload) as T;
+    memoryCache.set(key, { payload: redisPayload, expiresAt: now + resolveTtl(ttlSeconds, value) * 1_000 });
     logCache(`${label}: served from Redis cache (${countOf(value)})`);
     return value;
   }
@@ -178,10 +191,11 @@ export async function cachedProviderResult<T>(
     throw error;
   }
   const payload = JSON.stringify(value);
-  memoryCache.set(key, { payload, expiresAt: now + ttlSeconds * 1_000 });
-  await writeRedis(key, payload, ttlSeconds);
-  logCache(
-    `${label}: stored for ${ttlSeconds}s after ${Date.now() - startedAt}ms (${countOf(value)})`,
-  );
+  const ttl = resolveTtl(ttlSeconds, value);
+  if (ttl > 0) {
+    memoryCache.set(key, { payload, expiresAt: now + ttl * 1_000 });
+    await writeRedis(key, payload, ttl);
+  }
+  logCache(`${label}: stored for ${ttl}s after ${Date.now() - startedAt}ms (${countOf(value)})`);
   return value;
 }

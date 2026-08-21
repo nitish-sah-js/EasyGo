@@ -2,6 +2,7 @@
 
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -35,16 +36,16 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           </div>
           <p className="mt-2.5 text-sm leading-6 text-blush-800">{this.state.error.message}</p>
         </div>
-        <button
+        <Button
           type="button"
+          size="lg"
           onClick={() => {
             this.setState({ error: null });
             window.location.href = "/";
           }}
-          className="rounded-xl bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:bg-brand-800"
         >
           Back to home
-        </button>
+        </Button>
       </section>
     );
   }

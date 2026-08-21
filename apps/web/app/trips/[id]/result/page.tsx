@@ -53,7 +53,7 @@ export default function TripResultPage() {
       <AuthGuard>
         <section className="mx-auto flex min-h-[60vh] max-w-6xl items-center justify-center px-4 py-8">
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin text-brand-500" />
+            <Loader2 className="h-5 w-5 animate-spin text-brand-700" />
             Loading your trip…
           </div>
         </section>
@@ -72,7 +72,9 @@ export default function TripResultPage() {
                 <p className="text-sm font-semibold">{error?.message ?? "Result is not ready."}</p>
               </div>
               <Link href={`/trips/${params.id}/planning`}>
-                <Button variant="secondary">Check planning status</Button>
+                <Button size="lg" variant="default">
+                  Check planning status
+                </Button>
               </Link>
             </CardContent>
           </Card>
@@ -100,8 +102,8 @@ export default function TripResultPage() {
                 </Button>
               </Link>
               <Link href="/plan">
-                <Button variant="onInk" shape="pill">
-                  <Plus className="h-4 w-4" />
+                <Button variant="onInkSolid" shape="pill">
+                  <Plus />
                   Plan another
                 </Button>
               </Link>

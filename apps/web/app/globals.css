@@ -43,9 +43,10 @@ select {
 }
 
 @layer components {
-  /* The deep anchor surface. The reference design leans on a near-black navy for
-     hero banners and summary panels; this is the palette's equivalent — a deep
-     lavender-to-periwinkle ink that still belongs to the pastel family. */
+  /* The deep anchor surface for hero banners and summary panels. This sits below
+     brand-900 on the ramp — the reference design leans on a near-black navy here,
+     and the darkest published step is still too bright to anchor a full-bleed
+     hero behind white text. */
   .ink-panel {
     background-image:
       radial-gradient(circle at 82% 12%, rgba(187, 222, 251, 0.22), transparent 55%),

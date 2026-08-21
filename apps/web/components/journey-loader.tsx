@@ -184,7 +184,7 @@ export function JourneyLoader() {
               <Route className="h-5 w-5" />
             </span>
             <span className="text-2xl font-bold tracking-tight text-brand-900">
-              Next<span className="text-brand-600">Tour</span>
+              Next<span className="text-brand-700">Tour</span>
             </span>
           </div>
 

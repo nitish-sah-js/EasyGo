@@ -54,9 +54,9 @@ export default function PlanningPage() {
           action={
             data && isTerminal(data.status) && data.status !== "FAILED" ? (
               <Link href={`/trips/${params.id}/result`}>
-                <Button variant="onInk" shape="pill">
+                <Button size="lg" variant="onInkSolid" shape="pill">
                   Your trip is ready
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight />
                 </Button>
               </Link>
             ) : null
@@ -80,7 +80,7 @@ export default function PlanningPage() {
                       "absolute -left-[2.3rem] top-3 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white shadow-sm",
                       step.status === "COMPLETED" && "bg-mint-800 text-white",
                       step.status === "FAILED" && "bg-blush-600 text-white",
-                      step.status === "PROCESSING" && "bg-brand-600 text-white",
+                      step.status === "PROCESSING" && "bg-brand-700 text-white",
                       step.status === "PENDING" && "bg-brand-100 text-brand-400",
                     )}
                   >
@@ -136,8 +136,12 @@ export default function PlanningPage() {
 
             {data?.status === "FAILED" ? (
               <div className="mt-6 flex flex-wrap items-center gap-3">
-                <Button onClick={() => retryMutation.mutate()} disabled={retryMutation.isPending}>
-                  <RefreshCw className="h-4 w-4" />
+                <Button
+                  size="lg"
+                  onClick={() => retryMutation.mutate()}
+                  disabled={retryMutation.isPending}
+                >
+                  <RefreshCw />
                   {retryMutation.isPending ? "Retrying…" : "Retry planning"}
                 </Button>
                 <Link href={`/trips/${params.id}`}>

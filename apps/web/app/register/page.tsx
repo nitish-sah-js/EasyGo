@@ -35,7 +35,7 @@ export default function RegisterPage() {
       footer={
         <>
           Already registered?{" "}
-          <Link href="/login" className="font-semibold text-brand-600 hover:text-brand-700">
+          <Link href="/login" className="font-semibold text-brand-700 hover:text-brand-800">
             Sign in
           </Link>
         </>
@@ -56,8 +56,8 @@ export default function RegisterPage() {
             {mutation.error.message}
           </p>
         ) : null}
-        <Button size="lg" className="w-full" disabled={mutation.isPending}>
-          <UserPlus className="h-4 w-4" />
+        <Button size="lg" block disabled={mutation.isPending}>
+          <UserPlus />
           {mutation.isPending ? "Creating…" : "Create account"}
         </Button>
       </form>

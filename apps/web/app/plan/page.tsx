@@ -87,10 +87,14 @@ function OptionButton({
       onClick={onClick}
       aria-pressed={selected}
       className={cn(
-        "inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold capitalize transition",
+        "inline-flex h-12 items-center gap-2 rounded-[14px] border px-5 text-[0.9375rem] font-semibold capitalize",
+        "transition duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+        "[&_svg]:h-[1.125rem] [&_svg]:w-[1.125rem] [&_svg]:shrink-0",
+        "motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100",
         selected
           ? "border-brand-400 bg-brand-100 text-brand-800 shadow-sm ring-1 ring-brand-200"
-          : "border-border bg-surface text-muted-foreground hover:border-brand-300 hover:text-brand-700",
+          : "border-border bg-surface text-muted-foreground hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700",
       )}
     >
       {icon}
@@ -206,7 +210,7 @@ function PlanWizard() {
               <span
                 className={cn(
                   "flex h-10 w-10 items-center justify-center rounded-full border-2 border-white transition",
-                  done && "bg-brand-500 text-white shadow-card",
+                  done && "bg-brand-700 text-white shadow-card",
                   active && "bg-brand-700 text-white shadow-card ring-4 ring-brand-100",
                   !done && !active && "bg-brand-100 text-brand-400",
                 )}
@@ -390,24 +394,24 @@ function PlanWizard() {
               </p>
             ) : null}
 
-            <div className="flex items-center justify-between border-t border-border pt-6">
+            <div className="flex flex-col-reverse items-stretch gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
               <Button
                 type="button"
                 variant="secondary"
                 disabled={step === 0}
                 onClick={() => setStep((value) => value - 1)}
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft />
                 Back
               </Button>
               {step < steps.length - 1 ? (
                 <Button type="button" onClick={() => void goToNextStep()}>
                   Next
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight />
                 </Button>
               ) : (
                 <Button size="lg" disabled={mutation.isPending || created}>
-                  <Check className="h-4 w-4" />
+                  <Check />
                   {mutation.isPending ? "Creating…" : "Plan my trip"}
                 </Button>
               )}

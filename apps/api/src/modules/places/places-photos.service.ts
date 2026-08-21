@@ -33,6 +33,14 @@ export function normalizePhotoWidth(requested: number | undefined): number {
   return WIDTH_STEPS.find((step) => step >= clamped) ?? MAX_PHOTO_WIDTH;
 }
 
+/**
+ * A lookup that found nothing is cached only briefly. "No photo" is usually not a
+ * fact about the place — it is an API key without the photo entitlement, or a
+ * transient miss — and a long TTL would keep the site image-less for hours after
+ * the key is fixed.
+ */
+const EMPTY_RESULT_TTL_SECONDS = 300;
+
 const client = new GooglePlacesClient();
 
 /**
@@ -53,7 +61,7 @@ export async function resolvePhotoUri(photoName: string, width: number): Promise
     const result = await cachedProviderResult(
       PROVIDER,
       { keyParts: ["photo", String(maxWidthPx)], request: { photoName, maxWidthPx } },
-      env.PLACE_PHOTO_CACHE_TTL_SECONDS,
+      (value) => (value.uri ? env.PLACE_PHOTO_CACHE_TTL_SECONDS : EMPTY_RESULT_TTL_SECONDS),
       async () => ({ uri: (await client.fetchPhotoUri(photoName, maxWidthPx)) ?? null }),
       { label: `photo ${photoName.slice(-12)} @${maxWidthPx}px`, liveAction: "photo media hit" },
     );
@@ -109,7 +117,7 @@ export async function getCityPhoto(city: string): Promise<PlacePhoto | undefined
     const result = await cachedProviderResult(
       PROVIDER,
       { keyParts: ["city-photo", canonical], request: { city: canonical } },
-      env.PLACES_CACHE_TTL_SECONDS,
+      (value) => (value.photo ? env.PLACES_CACHE_TTL_SECONDS : EMPTY_RESULT_TTL_SECONDS),
       async () => ({ photo: await findCityPhoto(canonical) }),
       { label: `city photo ${canonical}`, liveAction: "city photo lookup" },
     );

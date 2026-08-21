@@ -140,12 +140,15 @@ export function MapVisualization({
               aria-label={`${style.label}: ${marker.label}`}
               style={markerPosition(marker, markers)}
               className={cn(
-                "absolute -translate-x-1/2 -translate-y-1/2 rounded-full p-2 text-white shadow-lift ring-2 ring-white transition hover:scale-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-300",
+                "absolute flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-white shadow-lift ring-2 ring-white",
+                "transition duration-200 ease-out hover:scale-110 active:scale-[0.98]",
+                "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-300",
+                "motion-reduce:transition-none",
                 style.pin,
                 active && "scale-110 ring-4",
               )}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-4 w-4 shrink-0" />
             </button>
           );
         })}
@@ -156,9 +159,9 @@ export function MapVisualization({
               type="button"
               aria-label="Close"
               onClick={() => setSelectedId(null)}
-              className="absolute right-3 top-3 rounded-full p-1 text-muted-foreground transition hover:bg-brand-100 hover:text-brand-700"
+              className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition duration-200 ease-out hover:bg-brand-100 hover:text-brand-700 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary motion-reduce:transition-none"
             >
-              <X className="h-4 w-4" />
+              <X className="h-4 w-4 shrink-0" />
             </button>
             <Chip tone="base" className="text-[0.65rem]">
               {markerStyle[selected.type].label}

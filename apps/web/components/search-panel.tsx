@@ -63,11 +63,12 @@ export function SearchPanel() {
               onClick={() => setMode(tab.mode)}
               aria-pressed={active}
               className={cn(
-                "relative flex items-center gap-2 px-3.5 py-2.5 text-sm font-semibold transition",
-                active ? "text-brand-700" : "text-muted-foreground hover:text-brand-700",
+                "relative flex h-11 items-center gap-2 rounded-[12px] px-4 text-[0.9375rem] font-semibold transition duration-200 ease-out",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                active ? "text-brand-700" : "text-muted-foreground hover:bg-brand-50 hover:text-brand-700",
               )}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-[1.05rem] w-[1.05rem] shrink-0" />
               {tab.label}
               {active ? (
                 <span className="absolute inset-x-2 -bottom-1 h-0.5 rounded-full bg-brand-600" />
@@ -123,7 +124,7 @@ export function SearchPanel() {
           </select>
         </PanelField>
         <Button size="lg" className="w-full lg:w-auto">
-          <Search className="h-4 w-4" />
+          <Search />
           Plan My Trip
         </Button>
       </div>
@@ -143,7 +144,7 @@ function PanelField({
   return (
     <div className="rounded-xl border border-border bg-white px-3.5 py-2.5 transition focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100">
       <div className="field-label mb-1">{label}</div>
-      <div className="flex items-center gap-2 text-brand-600">
+      <div className="flex items-center gap-2 text-brand-700">
         {icon}
         <div className="min-w-0 flex-1 text-foreground">{children}</div>
       </div>

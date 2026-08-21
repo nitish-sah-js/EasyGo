@@ -58,14 +58,20 @@ export default function TripPage() {
             : {})}
           action={
             trip && (trip.status === "PENDING" || trip.status === "FAILED") ? (
-              <Button variant="onInk" shape="pill" onClick={() => mutation.mutate()} disabled={mutation.isPending}>
-                <Play className="h-4 w-4" />
+              <Button
+                size="lg"
+                variant="onInkSolid"
+                shape="pill"
+                onClick={() => mutation.mutate()}
+                disabled={mutation.isPending}
+              >
+                <Play />
                 {mutation.isPending ? "Starting…" : "Start planning"}
               </Button>
             ) : trip ? (
               <Link href={`/trips/${params.id}/result`}>
-                <Button variant="onInk" shape="pill">
-                  <Sparkles className="h-4 w-4" />
+                <Button size="lg" variant="onInkSolid" shape="pill">
+                  <Sparkles />
                   View plan
                 </Button>
               </Link>
@@ -179,7 +185,7 @@ function PreferenceRow({
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
       <span className="flex min-w-[7.5rem] items-center gap-2 text-sm font-semibold text-muted-foreground">
-        <span className="text-brand-500">{icon}</span>
+        <span className="text-brand-700">{icon}</span>
         {label}
       </span>
       <div className="flex flex-wrap gap-1.5">

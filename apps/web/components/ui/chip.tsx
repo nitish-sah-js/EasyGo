@@ -44,10 +44,13 @@ export function FilterChip({
       type="button"
       aria-pressed={active}
       className={cn(
-        "rounded-full border px-4 py-1.5 text-sm font-semibold transition",
+        "inline-flex h-10 items-center gap-1.5 whitespace-nowrap rounded-full border px-4 text-sm font-semibold",
+        "transition duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+        "motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100",
         active
           ? "border-brand-700 bg-brand-700 text-white shadow-card"
-          : "border-border bg-surface text-muted-foreground hover:border-brand-300 hover:text-brand-700",
+          : "border-border bg-surface text-muted-foreground hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700",
         className,
       )}
       {...props}

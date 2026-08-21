@@ -17,7 +17,7 @@ const modeTone: Record<TransportMode, IconTone> = {
 };
 
 const labelTone: Record<RouteOption["label"], ChipTone> = {
-  CHEAPEST: "success",
+  CHEAPEST: "mid",
   FASTEST: "soft",
   BALANCED: "base",
   COMFORTABLE: "deep",
@@ -108,7 +108,7 @@ export function RouteCard({ route, recommended = false }: { route: RouteOption; 
                 className="grid gap-3 rounded-xl bg-brand-50/70 p-3.5 sm:grid-cols-[1fr_auto] sm:items-center"
               >
                 <div className="flex min-w-0 items-center gap-3">
-                  <IconTile tone={modeTone[segment.mode]} size="sm" className="bg-white">
+                  <IconTile tone={modeTone[segment.mode]} size="sm" className="bg-white text-brand-800">
                     <SegmentIcon className="h-4 w-4" />
                   </IconTile>
                   <div className="min-w-0">

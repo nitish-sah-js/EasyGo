@@ -30,7 +30,7 @@ const journeySteps = [
   {
     label: "Explore",
     icon: MapPin,
-    tone: "deep" as const,
+    tone: "base" as const,
     copy: "A day-by-day itinerary with places, meals, weather and a full cost breakdown.",
   },
 ];
@@ -65,15 +65,15 @@ export default function HomePage() {
               Orchestrate the entire trip in one place — compare every way to get there, find a
               place to stay, and leave with a day-by-day itinerary that fits your budget.
             </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Link href="/plan">
-                <Button size="lg" variant="onInk" shape="pill">
-                  <Plane className="h-4 w-4" />
+            <div className="mt-9 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <Link href="/plan" className="sm:w-auto">
+                <Button size="lg" variant="onInkSolid" shape="pill" block="responsive">
+                  <Plane />
                   Start planning
                 </Button>
               </Link>
-              <Link href="/trips">
-                <Button size="lg" variant="onInk" shape="pill">
+              <Link href="/trips" className="sm:w-auto">
+                <Button size="lg" variant="onInk" shape="pill" block="responsive">
                   View my trips
                 </Button>
               </Link>

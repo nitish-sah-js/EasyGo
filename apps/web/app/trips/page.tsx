@@ -56,7 +56,7 @@ export default function TripsPage() {
           action={
             <Link href="/plan">
               <Button shape="pill">
-                <Plus className="h-4 w-4" />
+                <Plus />
                 New trip
               </Button>
             </Link>
@@ -109,15 +109,13 @@ export default function TripsPage() {
 
                 <div className="flex items-center gap-2 border-t border-border pt-4">
                   <Link href={`/trips/${trip.id}/result`} className="flex-1">
-                    <Button size="sm" className="w-full">
+                    <Button block>
                       View plan
-                      <ArrowRight className="h-4 w-4" />
+                      <ArrowRight />
                     </Button>
                   </Link>
                   <Link href={`/trips/${trip.id}`}>
-                    <Button size="sm" variant="secondary">
-                      Details
-                    </Button>
+                    <Button variant="secondary">Details</Button>
                   </Link>
                   <Button
                     aria-label={`Delete ${trip.origin} to ${trip.destination} trip`}
@@ -127,7 +125,7 @@ export default function TripsPage() {
                     onClick={() => deleteMutation.mutate(trip.id)}
                     className="text-blush-600 hover:bg-blush-100 hover:text-blush-700"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 />
                   </Button>
                 </div>
               </CardContent>
@@ -148,8 +146,8 @@ export default function TripsPage() {
                 </p>
               </div>
               <Link href="/plan">
-                <Button shape="pill">
-                  <Plus className="h-4 w-4" />
+                <Button size="lg" shape="pill">
+                  <Plus />
                   Plan a trip
                 </Button>
               </Link>
@@ -165,7 +163,7 @@ function Meta({ icon, label, value }: { icon: React.ReactNode; label: string; va
   return (
     <div className="min-w-0">
       <dt className="flex items-center gap-1 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">
-        <span className="text-brand-500">{icon}</span>
+        <span className="text-brand-700">{icon}</span>
         {label}
       </dt>
       <dd className="mt-0.5 truncate text-sm font-semibold text-foreground">{value}</dd>
