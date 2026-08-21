@@ -5,6 +5,7 @@ import { isPlaceUsable, toAttraction } from "../../../lib/external/google-places
 import { resolveCityCenter, searchNearbyPlaces } from "../../../lib/external/google-places-search";
 import { withTimeout } from "../../../lib/with-timeout";
 import { rankAttractions } from "../places-ranking";
+import { attachWikimediaPhotos } from "../wikimedia-photos.service";
 import type { AttractionProvider } from "./places-provider.interface";
 
 export class RealAttractionProvider implements AttractionProvider {
@@ -20,6 +21,7 @@ export class RealAttractionProvider implements AttractionProvider {
     const center = await resolveCityCenter(this.client, city);
     const places = await searchNearbyPlaces(this.client, center, "tourist_attraction");
     const attractions = places.filter(isPlaceUsable).map((place, index) => toAttraction(place, city, index));
-    return rankAttractions(attractions, request);
+    const ranked = rankAttractions(attractions, request);
+    return attachWikimediaPhotos(ranked, env.WIKIMEDIA_PHOTO_LIMIT);
   }
 }

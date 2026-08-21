@@ -69,17 +69,29 @@ const envSchema = z.object({
   SKY_SCRAPPER_RAPIDAPI_KEY: z.string().optional(),
   SKY_SCRAPPER_RAPIDAPI_HOST: z.string().default("sky-scrapper.p.rapidapi.com"),
 
-  // Hotels / attractions / restaurants — Google Places API (New)
+  // Hotels / attractions / restaurants (search, address, rating) — Google Places API (New)
   GOOGLE_MAPS_API_KEY: z.string().optional(),
-  // Resolved photo-media URLs are short-lived on Google's side, so this stays
-  // comfortably below their expiry. Each miss is a separately billed Places
-  // Photo request, so lowering it costs money rather than saving it.
-  PLACE_PHOTO_CACHE_TTL_SECONDS: ttlSeconds(3_600),
   // How many top-ranked hotels get a real coordinate lookup. Each costs one
   // Places `searchText` call, which is metered separately from `searchNearby` and
   // is capped per-day at the project level (default 100/day). Only the first hotel
   // is actually shown and used for distances, so keep this small.
   HOTEL_GEOCODE_LIMIT: z.coerce.number().int().min(0).max(20).default(3),
+
+  // Photos — Wikimedia Commons (no API key required)
+  // Wikimedia's API etiquette policy asks every client to identify itself; an
+  // anonymous/generic User-Agent risks being throttled ahead of everyone else.
+  WIKIMEDIA_USER_AGENT: z
+    .string()
+    .default("NextTour-TripPlanner/1.0 (https://github.com/nexttour; contact: support@nexttour.app)"),
+  // Resolved thumbnail URLs are cached well inside their practical lifetime, so a
+  // popular destination card costs one Commons lookup per TTL rather than one per
+  // visitor.
+  PLACE_PHOTO_CACHE_TTL_SECONDS: ttlSeconds(3_600),
+  // How many top-ranked places (per hotel/attraction/restaurant list) get a
+  // Commons photo search. Commons is free and keyless, unlike Google Photos, so
+  // this can be larger than HOTEL_GEOCODE_LIMIT — the constraint here is request
+  // latency and API etiquette, not billing.
+  WIKIMEDIA_PHOTO_LIMIT: z.coerce.number().int().min(0).max(40).default(12),
 
   // Buses / trains / hotel rates — RedBus via Playwright
   REDBUS_HEADLESS: booleanFlag("true"),

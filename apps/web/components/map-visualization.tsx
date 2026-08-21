@@ -17,11 +17,11 @@ type Marker = {
   type: MarkerType;
 };
 
-const markerStyle: Record<MarkerType, { pin: string; icon: typeof MapPin; label: string }> = {
-  destination: { pin: "bg-brand-700", icon: Navigation, label: "Destination" },
-  hotel: { pin: "bg-brand-700", icon: Hotel, label: "Stay" },
-  attraction: { pin: "bg-brand-600", icon: MapPin, label: "Place" },
-  restaurant: { pin: "bg-brand-700", icon: Utensils, label: "Food" },
+const markerStyle: Record<MarkerType, { pin: string; text: string; icon: typeof MapPin; label: string }> = {
+  destination: { pin: "bg-[#FF8A3D]", text: "text-white", icon: Navigation, label: "Destination" },
+  hotel: { pin: "bg-[#5DD6E8]", text: "text-[#0B1F33]", icon: Hotel, label: "Stay" },
+  attraction: { pin: "bg-[#5DD6E8]", text: "text-[#0B1F33]", icon: MapPin, label: "Place" },
+  restaurant: { pin: "bg-[#5DD6E8]", text: "text-[#0B1F33]", icon: Utensils, label: "Food" },
 };
 
 function markerPosition(marker: Marker, markers: Marker[]) {
@@ -56,7 +56,7 @@ export function MapVisualization({
 
   if (destinationLat === undefined || destinationLng === undefined) {
     return (
-      <div className="flex aspect-[16/11] min-h-[280px] items-center justify-center rounded-2xl border border-dashed border-brand-200 bg-brand-50 p-6 text-center text-sm text-muted-foreground">
+      <div className="flex aspect-[16/11] min-h-[280px] items-center justify-center rounded-2xl border border-dashed border-[#087EA4]/40 bg-[#0B1F33] p-6 text-center text-sm text-[#5DD6E8]/70">
         No mapped locations yet — the hotel and place providers returned no results for this trip.
       </div>
     );
@@ -105,11 +105,20 @@ export function MapVisualization({
 
   return (
     <div className="space-y-3">
-      <div className="relative aspect-[16/11] min-h-[300px] overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-brand-100 via-brand-50 to-brand-200 shadow-card">
-        <div className="absolute inset-0 opacity-60 [background-image:linear-gradient(#90caf9_1px,transparent_1px),linear-gradient(90deg,#90caf9_1px,transparent_1px)] [background-size:40px_40px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_70%,rgba(144,202,249,0.55),transparent_45%),radial-gradient(circle_at_75%_30%,rgba(144,202,249,0.45),transparent_45%)]" />
+      <div className="relative aspect-[16/11] min-h-[300px] overflow-hidden rounded-2xl border border-[#087EA4]/40 bg-[#0B1F33] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.55)]">
+        <div className="absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(22,184,212,0.35)_1px,transparent_1px),linear-gradient(90deg,rgba(22,184,212,0.35)_1px,transparent_1px)] [background-size:40px_40px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_70%,rgba(8,126,164,0.55),transparent_45%),radial-gradient(circle_at_75%_30%,rgba(22,184,212,0.35),transparent_45%)]" />
 
         <svg className="absolute inset-0 h-full w-full" role="presentation">
+          <defs>
+            <filter id="mv-route-glow" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
           <polyline
             points={markers
               .slice(0, 7)
@@ -119,11 +128,13 @@ export function MapVisualization({
               })
               .join(" ")}
             fill="none"
-            stroke="#2196f3"
+            stroke="#16B8D4"
             strokeWidth="2"
+            strokeOpacity="0.9"
             strokeDasharray="5 5"
             strokeLinecap="round"
             vectorEffect="non-scaling-stroke"
+            filter="url(#mv-route-glow)"
           />
         </svg>
 
@@ -140,12 +151,14 @@ export function MapVisualization({
               aria-label={`${style.label}: ${marker.label}`}
               style={markerPosition(marker, markers)}
               className={cn(
-                "absolute flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-white shadow-lift ring-2 ring-white",
+                "absolute flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full shadow-lift ring-2 ring-white/90",
                 "transition duration-200 ease-out hover:scale-110 active:scale-[0.98]",
-                "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-300",
+                "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF8A3D]/60",
                 "motion-reduce:transition-none",
                 style.pin,
-                active && "scale-110 ring-4",
+                style.text,
+                marker.type === "destination" && "shadow-[0_0_18px_rgba(255,138,61,0.55)]",
+                active && "scale-110 ring-4 ring-[#FF8A3D] shadow-[0_0_22px_rgba(255,138,61,0.75)]",
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />
@@ -154,25 +167,25 @@ export function MapVisualization({
         })}
 
         {selected ? (
-          <div className="absolute bottom-4 left-1/2 w-[min(20rem,calc(100%-2rem))] -translate-x-1/2 rounded-2xl border border-border bg-surface p-4 shadow-panel">
+          <div className="absolute bottom-4 left-1/2 w-[min(20rem,calc(100%-2rem))] -translate-x-1/2 rounded-2xl border border-[#16B8D4]/25 bg-[#0B1F33]/92 p-4 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.65)] backdrop-blur">
             <button
               type="button"
               aria-label="Close"
               onClick={() => setSelectedId(null)}
-              className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition duration-200 ease-out hover:bg-brand-100 hover:text-brand-700 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary motion-reduce:transition-none"
+              className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full text-[#5DD6E8] transition duration-200 ease-out hover:bg-white/10 hover:text-white active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16B8D4] motion-reduce:transition-none"
             >
               <X className="h-4 w-4 shrink-0" />
             </button>
-            <Chip tone="base" className="text-[0.65rem]">
+            <Chip tone="onInk" className="text-[0.65rem]">
               {markerStyle[selected.type].label}
             </Chip>
-            <h4 className="mt-2 pr-6 text-base font-bold tracking-tight text-foreground">
+            <h4 className="mt-2 pr-6 text-base font-bold tracking-tight text-white">
               {selected.label}
             </h4>
             {selected.detail ? (
-              <p className="mt-0.5 text-xs capitalize text-muted-foreground">{selected.detail}</p>
+              <p className="mt-0.5 text-xs capitalize text-[#5DD6E8]/80">{selected.detail}</p>
             ) : null}
-            <p className="mt-2 text-xs tabular-nums text-muted-foreground">
+            <p className="mt-2 text-xs tabular-nums text-[#5DD6E8]/60">
               {selected.latitude.toFixed(4)}, {selected.longitude.toFixed(4)}
             </p>
           </div>
@@ -190,7 +203,7 @@ export function MapVisualization({
               key={type}
               className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-xs font-medium text-muted-foreground"
             >
-              <span className={cn("flex h-4 w-4 items-center justify-center rounded-full text-white", style.pin)}>
+              <span className={cn("flex h-4 w-4 items-center justify-center rounded-full", style.pin, style.text)}>
                 <Icon className="h-2.5 w-2.5" />
               </span>
               {style.label} · {count}

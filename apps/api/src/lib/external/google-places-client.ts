@@ -13,8 +13,6 @@ const FIELD_MASK = [
   "places.regularOpeningHours",
   "places.types",
   "places.primaryType",
-  // Photo references only — the media bytes are a separate, separately metered call.
-  "places.photos",
 ].join(",");
 
 export class GooglePlacesClientError extends Error {
@@ -29,14 +27,6 @@ export class GooglePlacesClientError extends Error {
   }
 }
 
-export interface GooglePlacePhoto {
-  /** `places/{placeId}/photos/{photoReference}` */
-  name?: string;
-  widthPx?: number;
-  heightPx?: number;
-  authorAttributions?: Array<{ displayName?: string; uri?: string }>;
-}
-
 export interface GooglePlace {
   id?: string;
   displayName?: { text?: string };
@@ -48,7 +38,6 @@ export interface GooglePlace {
   regularOpeningHours?: { weekdayDescriptions?: string[] };
   types?: string[];
   primaryType?: string;
-  photos?: GooglePlacePhoto[];
 }
 
 export class GooglePlacesClient {
@@ -84,32 +73,6 @@ export class GooglePlacesClient {
     });
   }
 
-  /**
-   * Resolves a photo resource name to a temporary, key-free CDN URL.
-   *
-   * `skipHttpRedirect` makes Google answer with the URL as JSON instead of a 302
-   * to the bytes, so the API key never reaches the browser and the URL can be
-   * cached and handed out to many visitors. The returned URL is short-lived —
-   * treat it as a cache entry with a TTL, never as a stored value.
-   */
-  async fetchPhotoUri(photoName: string, maxWidthPx: number): Promise<string | undefined> {
-    if (!this.apiKey) {
-      throw new GooglePlacesClientError("Missing GOOGLE_MAPS_API_KEY.");
-    }
-
-    const query = new URLSearchParams({
-      maxWidthPx: String(maxWidthPx),
-      skipHttpRedirect: "true",
-      key: this.apiKey,
-    });
-
-    const payload = await retry(
-      () => this.getOnce<{ photoUri?: string }>(`${photoName}/media?${query.toString()}`),
-      { label: "Google Places photo media", isRetryable: isTransientHttpError },
-    );
-    return payload.photoUri;
-  }
-
   private async post(path: string, body: unknown): Promise<{ places?: GooglePlace[] }> {
     if (!this.apiKey) {
       throw new GooglePlacesClientError("Missing GOOGLE_MAPS_API_KEY.");
@@ -119,23 +82,6 @@ export class GooglePlacesClient {
       label: `Google Places ${path}`,
       isRetryable: isTransientHttpError,
     });
-  }
-
-  private async getOnce<T>(path: string): Promise<T> {
-    let response: Response;
-    try {
-      response = await fetch(`${this.baseUrl}/${path}`, {
-        method: "GET",
-        signal: AbortSignal.timeout(env.EXTERNAL_API_TIMEOUT_MS),
-      });
-    } catch (error) {
-      if (error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError")) {
-        throw new GooglePlacesClientError(`Google Places timed out after ${env.EXTERNAL_API_TIMEOUT_MS}ms.`);
-      }
-      throw new GooglePlacesClientError(`Google Places request failed: ${(error as Error).message}`);
-    }
-
-    return this.parseBody(response) as Promise<T>;
   }
 
   private async postOnce(path: string, body: unknown): Promise<{ places?: GooglePlace[] }> {

@@ -7,12 +7,12 @@ import { cn } from "@/lib/utils";
 /**
  * A real photograph of a place, over a `Scenic` that stands in when there isn't one.
  *
- * Photos come from Google Places via the API's photo endpoint, which resolves a
- * reference and redirects to Google's CDN. Three things can go wrong — the place
- * has no photo, the project has no Places key, the resolved URL has expired — and
- * all three land as a failed image load. So the illustrated scene is painted
- * first and the photo fades in on top of it: a failure reveals the fallback that
- * was already there instead of collapsing the card's height.
+ * Photos come from Wikimedia Commons via the API's photo endpoint, which
+ * resolves a file title and redirects to Wikimedia's CDN. Two things can go
+ * wrong — the place has no matching Commons photo, or the resolved URL has
+ * expired — and both land as a failed image load. So the illustrated scene is
+ * painted first and the photo fades in on top of it: a failure reveals the
+ * fallback that was already there instead of collapsing the card's height.
  */
 export function PlaceImage({
   src,
@@ -66,7 +66,7 @@ export function PlaceImage({
         <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-white/0 via-white/25 to-white/0" />
       ) : null}
       {showPhoto ? (
-        // The API redirects to Google's photo CDN, whose host next/image cannot be
+        // The API redirects to Wikimedia's photo CDN, whose host next/image cannot be
         // given as a remote pattern ahead of time.
         // eslint-disable-next-line @next/next/no-img-element
         <img

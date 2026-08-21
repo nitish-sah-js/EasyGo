@@ -6,6 +6,7 @@ import { isPlaceUsable, toRestaurant } from "../../../lib/external/google-places
 import { resolveCityCenter, searchNearbyPlaces } from "../../../lib/external/google-places-search";
 import { withTimeout } from "../../../lib/with-timeout";
 import { filterAndRankRestaurants } from "../places-ranking";
+import { attachWikimediaPhotos } from "../wikimedia-photos.service";
 import type { RestaurantProvider } from "./places-provider.interface";
 
 export class RealRestaurantProvider implements RestaurantProvider {
@@ -34,6 +35,7 @@ export class RealRestaurantProvider implements RestaurantProvider {
     }
 
     const mapped = merged.filter(isPlaceUsable).map((place, index) => toRestaurant(place, city, index));
-    return filterAndRankRestaurants(mapped, request);
+    const ranked = filterAndRankRestaurants(mapped, request);
+    return attachWikimediaPhotos(ranked, env.WIKIMEDIA_PHOTO_LIMIT);
   }
 }

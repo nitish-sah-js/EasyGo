@@ -108,18 +108,19 @@ export interface RouteOption {
 }
 
 /**
- * A photo of a real place, as returned by Google Places API (New).
+ * A photo of a real place, sourced from Wikimedia Commons.
  *
- * `name` is the photo resource name, not a URL — the media bytes live behind an
- * API-key'd endpoint, so the browser asks the API to resolve it instead
- * (`GET /api/places/photo?name=...`). Google's terms require the author
- * attribution be shown alongside the image, so it travels with the reference.
+ * `name` is a Commons file title, not a URL — the browser asks the API to
+ * resolve it to a real image URL instead (`GET /api/places/photo?name=...`).
+ * Most Commons licenses (e.g. CC BY-SA) require attribution, so the
+ * photographer credit and license travel with the reference.
  */
 export interface PlacePhoto {
-  /** `places/{placeId}/photos/{photoReference}` */
+  /** Commons file title, e.g. `File:Taj Mahal at sunset.jpg`. */
   name: string;
   attribution?: string;
   attributionUri?: string;
+  license?: string;
   widthPx?: number;
   heightPx?: number;
 }
@@ -136,7 +137,7 @@ export interface Place {
   priceLevel?: "BUDGET" | "MID_RANGE" | "PREMIUM";
   estimatedCost?: number;
   source: "REAL";
-  /** Empty when Google has no photos for the place. */
+  /** Empty when Wikimedia Commons has no matching photo for the place. */
   photos?: PlacePhoto[];
 }
 

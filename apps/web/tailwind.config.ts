@@ -1,12 +1,20 @@
 import type { Config } from "tailwindcss";
 
-// Material Blue is the whole brand palette. The site is deliberately monochrome:
+// Night-map teal is the whole brand palette. The site is deliberately monochrome:
 // differentiation between surfaces, tiles and cards comes from the *step* of the
-// ramp, never from a second hue, so the only colour that ever competes with the
-// blue is a status signal.
+// ramp, never from a second hue, so the only colours that ever compete with it
+// are the two status hues below and `accent` (the "active destination" orange).
 const brand = {
-  50: "#e3f2fd", 100: "#bbdefb", 200: "#90caf9", 300: "#64b5f6", 400: "#42a5f5",
-  500: "#2196f3", 600: "#1e88e5", 700: "#1976d2", 800: "#1565c0", 900: "#0d47a1",
+  50: "#EAFBFD", 100: "#CFF3F8", 200: "#9FE6F0", 300: "#5DD6E8", 400: "#34C7DE",
+  500: "#16B8D4", 600: "#0FA0BE", 700: "#087EA4", 800: "#0B4E6A", 900: "#0B1F33",
+};
+
+// The active/CTA accent — the one colour in the palette that is meant to compete
+// with the brand ramp on purpose, for the thing the user should act on right now
+// (a selected marker, a primary call to action).
+const accent = {
+  50: "#FFF3EA", 100: "#FFE0C7", 200: "#FFC79A", 300: "#FFAD6D", 400: "#FF9B54",
+  500: "#FF8A3D", 600: "#F2761F", 700: "#D9620F", 800: "#B34F0C", 900: "#7A360A",
 };
 
 // The two exceptions. Error and success states carry meaning that a blue cannot
@@ -28,6 +36,7 @@ const config: Config = {
     extend: {
       colors: {
         brand,
+        accent,
         blush: danger,
         mint: success,
         border: "hsl(var(--border))",
@@ -44,11 +53,11 @@ const config: Config = {
         },
       },
       boxShadow: {
-        panel: "0 18px 60px rgba(13, 71, 161, 0.14)",
-        card: "0 1px 2px rgba(13, 71, 161, 0.05), 0 10px 30px -16px rgba(13, 71, 161, 0.22)",
-        lift: "0 24px 48px -24px rgba(13, 71, 161, 0.4)",
-        ink: "0 24px 60px -28px rgba(13, 71, 161, 0.65)",
-        sm: "0 1px 2px rgba(13, 71, 161, 0.07)",
+        panel: "0 18px 60px rgba(11, 31, 51, 0.14)",
+        card: "0 1px 2px rgba(11, 31, 51, 0.05), 0 10px 30px -16px rgba(11, 31, 51, 0.22)",
+        lift: "0 24px 48px -24px rgba(11, 31, 51, 0.4)",
+        ink: "0 24px 60px -28px rgba(11, 31, 51, 0.65)",
+        sm: "0 1px 2px rgba(11, 31, 51, 0.07)",
       },
       borderRadius: {
         "4xl": "2rem",

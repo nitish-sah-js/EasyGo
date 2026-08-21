@@ -49,7 +49,7 @@ export function FilterChip({
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
         "motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100",
         active
-          ? "border-brand-700 bg-brand-700 text-white shadow-card"
+          ? "border-accent-500 bg-accent-500 text-white shadow-card"
           : "border-border bg-surface text-muted-foreground hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700",
         className,
       )}

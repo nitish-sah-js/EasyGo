@@ -1,4 +1,4 @@
-import type { Coordinates, PlacePhoto } from "@nexttour/shared";
+import type { Coordinates } from "@nexttour/shared";
 import { env } from "../../config/env";
 import { cachedProviderResult } from "../provider-cache";
 import type { GooglePlace, GooglePlacesClient } from "./google-places-client";
@@ -48,13 +48,9 @@ export async function searchNearbyPlaces(
 }
 
 /**
- * Resolves a place by its own name: the "name -> search -> place -> photo"
- * lookup every surface needs when a place arrives without Google's data attached.
- *
- * redBus lists property names but no coordinates, and a nearby search returns a
- * photo for most but not all of its results — both gaps are closed by the same
- * text search, so callers get coordinates and a photo for one billed call rather
- * than two.
+ * Resolves a place by its own name: the "name -> search -> place -> coordinates"
+ * lookup redBus-sourced hotels need, since redBus lists property names but no
+ * coordinates.
  *
  * Returns an empty result (never throws) so a failed lookup degrades to the
  * caller's fallback instead of losing the place entirely.
@@ -62,7 +58,6 @@ export async function searchNearbyPlaces(
 export interface NamedPlaceLookup {
   placeId?: string;
   coordinates?: Coordinates;
-  photo?: PlacePhoto;
 }
 
 // A lookup that found nothing is kept only briefly: it usually means the
@@ -90,24 +85,11 @@ export async function lookupPlaceByName(
         if (!place) return {};
 
         const location = place.location;
-        const photo = place.photos?.[0];
-        const author = photo?.authorAttributions?.[0];
 
         return {
           ...(place.id ? { placeId: place.id } : {}),
           ...(typeof location?.latitude === "number" && typeof location.longitude === "number"
             ? { coordinates: { latitude: location.latitude, longitude: location.longitude } }
-            : {}),
-          ...(photo?.name
-            ? {
-                photo: {
-                  name: photo.name,
-                  ...(author?.displayName ? { attribution: author.displayName } : {}),
-                  ...(author?.uri ? { attributionUri: author.uri } : {}),
-                  ...(photo.widthPx !== undefined ? { widthPx: photo.widthPx } : {}),
-                  ...(photo.heightPx !== undefined ? { heightPx: photo.heightPx } : {}),
-                },
-              }
             : {}),
         };
       },

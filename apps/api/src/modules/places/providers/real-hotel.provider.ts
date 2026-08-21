@@ -7,6 +7,7 @@ import { toHotels as toRedbusHotels } from "../../../lib/external/redbus-hotel-m
 import { RedbusHotelsScraper } from "../../../lib/external/redbus-hotels-scraper";
 import { withTimeout } from "../../../lib/with-timeout";
 import { rankHotels } from "../places-ranking";
+import { attachWikimediaPhotos } from "../wikimedia-photos.service";
 import type { HotelProvider } from "./places-provider.interface";
 
 /**
@@ -39,11 +40,12 @@ export class RealHotelProvider implements HotelProvider {
 
     if (hotels.length === 0) {
       hotels = await this.searchGooglePlaces(city, cityCenter);
-      return rankHotels(hotels, request);
+      return attachWikimediaPhotos(rankHotels(hotels, request), env.WIKIMEDIA_PHOTO_LIMIT);
     }
 
     const ranked = rankHotels(hotels, request);
-    return this.withRealCoordinates(ranked, city, cityCenter);
+    const withCoordinates = await this.withRealCoordinates(ranked, city, cityCenter);
+    return attachWikimediaPhotos(withCoordinates, env.WIKIMEDIA_PHOTO_LIMIT);
   }
 
   private async searchRedbus(city: string, request: TripPlanningRequest, cityCenter: Coordinates): Promise<Hotel[]> {
@@ -72,8 +74,7 @@ export class RealHotelProvider implements HotelProvider {
     // Geocoding runs *after* ranking so the hotel the UI actually shows — and the one
     // used for hotel↔attraction distances — always has real coordinates. Each lookup
     // costs one Places `searchText` call against a per-day project quota, so the
-    // number is deliberately small and tunable. The same call also carries back a
-    // photo where redBus (the usual source for these hotels) has none.
+    // number is deliberately small and tunable.
     const head = hotels.slice(0, env.HOTEL_GEOCODE_LIMIT);
     const located = await Promise.all(
       head.map(async (hotel) => {
@@ -87,7 +88,6 @@ export class RealHotelProvider implements HotelProvider {
                 distanceFromCenterKm: haversineDistanceKm(cityCenter, lookup.coordinates),
               }
             : {}),
-          ...(lookup.photo && !hotel.photos?.length ? { photos: [lookup.photo] } : {}),
         };
       }),
     );

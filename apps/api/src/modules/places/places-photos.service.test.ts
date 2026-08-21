@@ -2,16 +2,18 @@ import { describe, expect, it } from "vitest";
 import { isPhotoName, normalizePhotoWidth } from "./places-photos.service";
 
 describe("isPhotoName", () => {
-  it("accepts a Google Places photo resource name", () => {
-    expect(isPhotoName("places/ChIJ-abc_123/photos/AeJbb3f-Xyz_09")).toBe(true);
+  it("accepts a Wikimedia Commons file title", () => {
+    expect(isPhotoName("File:Taj Mahal at sunset.jpg")).toBe(true);
+    expect(isPhotoName("File:Simple_name.png")).toBe(true);
   });
 
-  it("rejects anything that is not a photo resource name", () => {
+  it("rejects anything that is not a Commons file title", () => {
     // The endpoint is unauthenticated, so this guard is what stops it being used
-    // as an open redirect or a generic proxy for other Google endpoints.
+    // as an open redirect or a generic proxy for other URLs.
     expect(isPhotoName("https://evil.example.com/steal")).toBe(false);
-    expect(isPhotoName("places/ChIJ-abc/photos/../../v1/places:searchText")).toBe(false);
-    expect(isPhotoName("places/ChIJ-abc")).toBe(false);
+    expect(isPhotoName("File:../../v1/places:searchText")).toBe(false);
+    expect(isPhotoName("File:has/slash.jpg")).toBe(false);
+    expect(isPhotoName("NotAFile.jpg")).toBe(false);
     expect(isPhotoName("")).toBe(false);
   });
 });

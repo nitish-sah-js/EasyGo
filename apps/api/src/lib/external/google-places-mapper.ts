@@ -1,4 +1,4 @@
-import { haversineDistanceKm, type Attraction, type FoodPreference, type Hotel, type InterestCategory, type PlacePhoto, type Restaurant } from "@nexttour/shared";
+import { haversineDistanceKm, type Attraction, type FoodPreference, type Hotel, type InterestCategory, type Restaurant } from "@nexttour/shared";
 import type { GooglePlace } from "./google-places-client";
 
 type AppPriceLevel = "BUDGET" | "MID_RANGE" | "PREMIUM";
@@ -70,32 +70,6 @@ const ATTRACTION_ENTRY_FEE: Record<InterestCategory, number> = {
   CULTURE: 50,
 };
 
-/**
- * Google returns up to ten photo references per place. Only the first few are
- * ever rendered (a card image and, at most, a small gallery), and every extra
- * one is a photo-media call the UI would never make — so the tail is dropped
- * here rather than carried through the trip payload and into the database.
- */
-const MAX_PHOTOS_PER_PLACE = 3;
-
-function placePhotos(place: GooglePlace): PlacePhoto[] {
-  return (place.photos ?? [])
-    .slice(0, MAX_PHOTOS_PER_PLACE)
-    .flatMap<PlacePhoto>((photo) => {
-      if (!photo.name) return [];
-      const author = photo.authorAttributions?.[0];
-      return [
-        {
-          name: photo.name,
-          ...(author?.displayName ? { attribution: author.displayName } : {}),
-          ...(author?.uri ? { attributionUri: author.uri } : {}),
-          ...(photo.widthPx !== undefined ? { widthPx: photo.widthPx } : {}),
-          ...(photo.heightPx !== undefined ? { heightPx: photo.heightPx } : {}),
-        },
-      ];
-    });
-}
-
 function placeCoordinates(place: GooglePlace): { latitude: number; longitude: number } {
   return {
     latitude: place.location?.latitude ?? 0,
@@ -137,7 +111,6 @@ export function toAttraction(place: GooglePlace, city: string, index: number): A
     priceLevel,
     estimatedCost: ATTRACTION_ENTRY_FEE[category],
     source: "REAL",
-    photos: placePhotos(place),
     category,
     entryFee: ATTRACTION_ENTRY_FEE[category],
     openingHours: place.regularOpeningHours?.weekdayDescriptions?.[0] ?? "Hours vary, check locally",
@@ -171,7 +144,6 @@ export function toRestaurant(place: GooglePlace, city: string, index: number): R
     priceLevel,
     estimatedCost: MEAL_COST_ESTIMATE[priceLevel],
     source: "REAL",
-    photos: placePhotos(place),
     cuisine: detectCuisine(place),
     vegetarianAvailable,
     veganAvailable,
@@ -197,7 +169,6 @@ export function toHotel(place: GooglePlace, city: string, cityCenter: { latitude
     priceLevel,
     estimatedCost: HOTEL_NIGHTLY_ESTIMATE[priceLevel],
     source: "REAL",
-    photos: placePhotos(place),
     reviewCount: place.userRatingCount ?? 0,
     pricePerNight: HOTEL_NIGHTLY_ESTIMATE[priceLevel],
     amenities: ["WiFi"],

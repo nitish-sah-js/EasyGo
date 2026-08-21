@@ -3,15 +3,15 @@
 @tailwind utilities;
 
 :root {
-  /* Neutrals are tinted toward the brand blue so nothing reads as flat grey
-     next to the palette. Hue 210 is the ramp's own hue. */
-  --background: 210 60% 98%;
-  --foreground: 214 40% 14%;
+  /* Neutrals are tinted toward the brand teal so nothing reads as flat grey
+     next to the palette. Hue 195 is the ramp's own hue. */
+  --background: 195 60% 98%;
+  --foreground: 210 64% 12%;
   --surface: 0 0% 100%;
-  --muted: 210 60% 96%;
-  --muted-foreground: 213 18% 42%;
-  --border: 210 45% 89%;
-  --primary: 210 79% 46%;
+  --muted: 195 60% 96%;
+  --muted-foreground: 197 18% 42%;
+  --border: 195 45% 89%;
+  --primary: 195 91% 34%;
   --primary-foreground: 0 0% 100%;
 }
 
@@ -22,11 +22,11 @@
 body {
   min-height: 100vh;
   background:
-    radial-gradient(circle at 12% 0%, rgba(144, 202, 249, 0.4), transparent 32rem),
-    radial-gradient(circle at 88% 6%, rgba(187, 222, 251, 0.32), transparent 30rem),
-    radial-gradient(circle at 70% 96%, rgba(144, 202, 249, 0.28), transparent 34rem),
-    radial-gradient(circle at 4% 88%, rgba(227, 242, 253, 0.26), transparent 30rem),
-    linear-gradient(180deg, hsl(var(--background)), #f5faff 55%, #eef6fe);
+    radial-gradient(circle at 12% 0%, rgba(159, 230, 240, 0.4), transparent 32rem),
+    radial-gradient(circle at 88% 6%, rgba(207, 243, 248, 0.32), transparent 30rem),
+    radial-gradient(circle at 70% 96%, rgba(159, 230, 240, 0.28), transparent 34rem),
+    radial-gradient(circle at 4% 88%, rgba(234, 251, 253, 0.26), transparent 30rem),
+    linear-gradient(180deg, hsl(var(--background)), #f3fbfc 55%, #ecf7f6);
   background-attachment: fixed;
   color: hsl(var(--foreground));
 }
@@ -38,7 +38,7 @@ select {
 }
 
 .route-line {
-  background-image: linear-gradient(90deg, #42a5f5 50%, transparent 0);
+  background-image: linear-gradient(90deg, #34c7de 50%, transparent 0);
   background-size: 14px 2px;
 }
 
@@ -49,9 +49,9 @@ select {
      hero behind white text. */
   .ink-panel {
     background-image:
-      radial-gradient(circle at 82% 12%, rgba(187, 222, 251, 0.22), transparent 55%),
-      radial-gradient(circle at 8% 88%, rgba(227, 242, 253, 0.2), transparent 55%),
-      linear-gradient(135deg, #0a3577 0%, #0d47a1 45%, #072a5e 100%);
+      radial-gradient(circle at 82% 12%, rgba(207, 243, 248, 0.22), transparent 55%),
+      radial-gradient(circle at 8% 88%, rgba(234, 251, 253, 0.2), transparent 55%),
+      linear-gradient(135deg, #0b2a45 0%, #0c3b5a 45%, #05141f 100%);
     color: #ffffff;
   }
 
@@ -110,7 +110,7 @@ select {
 /* Layer 2 — world map. A globe graticule plus a dot matrix, breathing sideways
    so the map reads as the furthest, slowest plane of the parallax. */
 .hs-dotmap {
-  background-image: radial-gradient(circle, rgba(144, 202, 249, 0.35) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(159, 230, 240, 0.35) 1px, transparent 1px);
   background-size: 22px 22px;
   -webkit-mask-image: radial-gradient(ellipse 70% 65% at 50% 42%, #000 20%, transparent 78%);
   mask-image: radial-gradient(ellipse 70% 65% at 50% 42%, #000 20%, transparent 78%);
@@ -292,7 +292,7 @@ select {
      falling back to its 100%-of-an-auto-height parent (i.e. zero). */
   width: var(--hs-plane);
   height: var(--hs-plane);
-  filter: drop-shadow(0 6px 12px rgba(6, 32, 74, 0.55));
+  filter: drop-shadow(0 6px 12px rgba(5, 14, 23, 0.55));
 }
 
 .hs-plane-glow {
@@ -303,7 +303,7 @@ select {
   height: 260%;
   transform: translate(-50%, -50%);
   border-radius: 9999px;
-  background: radial-gradient(closest-side, rgba(187, 222, 251, 0.3), transparent);
+  background: radial-gradient(closest-side, rgba(207, 243, 248, 0.3), transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {

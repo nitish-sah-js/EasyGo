@@ -41,13 +41,13 @@ const photoQuerySchema = z.object({
 });
 
 /**
- * Photo endpoints redirect to Google's CDN instead of streaming the bytes: the
- * API key stays server-side, but the image itself never touches this process.
+ * Photo endpoints redirect to Wikimedia's CDN instead of streaming the bytes,
+ * so the image itself never touches this process.
  *
  * They sit above `requireAuth` on purpose. A cross-origin `<img>` does not carry
  * the session cookie, so an authenticated photo route could not render anywhere,
  * and the landing page needs images while logged out. Abuse is bounded instead by
- * the resource-name format, the supported-city allowlist and the response cache.
+ * the file-title format, the supported-city allowlist and the response cache.
  */
 const PHOTO_BROWSER_CACHE_SECONDS = 1_800;
 
@@ -67,7 +67,7 @@ placesRoutes.get(
   asyncHandler(async (request, response) => {
     const name = typeof request.query.name === "string" ? request.query.name : "";
     if (!isPhotoName(name)) {
-      throw new ApiError(422, "Query parameter `name` must be a Google Places photo resource name");
+      throw new ApiError(422, "Query parameter `name` must be a Wikimedia Commons file title");
     }
     const { w } = photoQuerySchema.parse(request.query);
     sendPhotoRedirect(response, await resolvePhotoUri(name, w ?? 800));

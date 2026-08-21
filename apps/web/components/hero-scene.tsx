@@ -39,13 +39,13 @@ export function HeroScene() {
   return (
     <div className="hs-scene ink-panel pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden>
       {/* 1 — background gradient */}
-      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_18%_22%,rgba(144,202,249,0.4),transparent_45%),radial-gradient(circle_at_78%_18%,rgba(187,222,251,0.32),transparent_42%),radial-gradient(circle_at_60%_85%,rgba(144,202,249,0.22),transparent_45%)]" />
+      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_18%_22%,rgba(159,230,240,0.4),transparent_45%),radial-gradient(circle_at_78%_18%,rgba(207,243,248,0.32),transparent_42%),radial-gradient(circle_at_60%_85%,rgba(159,230,240,0.22),transparent_45%)]" />
       <div className="absolute left-[68%] top-[16%] z-0 h-24 w-24 rounded-full bg-brand-200/70 blur-md" />
 
       {/* 2 — world map + clouds */}
       <div className="hs-map absolute inset-0 z-10">
         <svg className="h-full w-full opacity-[0.16]" viewBox="0 0 1200 500" preserveAspectRatio="xMidYMid slice" role="presentation">
-          <g fill="none" stroke="#90caf9" strokeWidth="1">
+          <g fill="none" stroke="#9FE6F0" strokeWidth="1">
             {[-3, -2, -1, 0, 1, 2, 3].map((k) => (
               <path key={`m${k}`} d={`M${600 + k * 180} -20C${600 + k * 268} 150 ${600 + k * 268} 350 ${600 + k * 180} 520`} />
             ))}
@@ -71,7 +71,7 @@ export function HeroScene() {
           <path
             d={ROUTE}
             fill="none"
-            stroke="rgba(144,202,249,0.5)"
+            stroke="rgba(22,184,212,0.6)"
             strokeWidth="2"
             strokeLinecap="round"
             strokeDasharray="1 13"
@@ -85,10 +85,10 @@ export function HeroScene() {
             style={{ left: stop.left, top: stop.top }}
           >
             <span
-              className="hs-pin-ring absolute inset-0 rounded-full bg-brand-200/50"
+              className="hs-pin-ring absolute inset-0 rounded-full bg-brand-300/50"
               style={{ animationDelay: stop.delay }}
             />
-            <span className="absolute inset-0 rounded-full bg-brand-200/90 shadow-[0_0_10px_rgba(187,222,251,0.8)]" />
+            <span className="absolute inset-0 rounded-full bg-brand-300/90 shadow-[0_0_10px_rgba(93,214,232,0.8)]" />
           </span>
         ))}
       </div>
@@ -156,13 +156,13 @@ export function HeroScene() {
         preserveAspectRatio="none"
         role="presentation"
       >
-        <path d="M0 320V150q180-96 360-30t300-52 240 44 300-24v232Z" fill="#2196f3" opacity="0.32" />
-        <path d="M0 320V212q220-84 420-18t340-40 440 40v126Z" fill="#2196f3" opacity="0.34" />
-        <path d="M0 320v-64q260-56 480 4t360-26 360 30v56Z" fill="#0d47a1" opacity="0.45" />
+        <path d="M0 320V150q180-96 360-30t300-52 240 44 300-24v232Z" fill="#16B8D4" opacity="0.32" />
+        <path d="M0 320V212q220-84 420-18t340-40 440 40v126Z" fill="#16B8D4" opacity="0.34" />
+        <path d="M0 320v-64q260-56 480 4t360-26 360 30v56Z" fill="#0B1F33" opacity="0.45" />
       </svg>
 
       {/* 5 — scrim: keeps the copy above at full contrast wherever the plane passes */}
-      <div className="absolute inset-0 z-40 bg-[radial-gradient(ellipse_60%_50%_at_50%_46%,rgba(8,42,94,0.5),transparent_75%)]" />
+      <div className="absolute inset-0 z-40 bg-[radial-gradient(ellipse_60%_50%_at_50%_46%,rgba(7,19,31,0.5),transparent_75%)]" />
     </div>
   );
 }
@@ -174,8 +174,8 @@ function Airplane() {
       <defs>
         <linearGradient id="hsPlaneBody" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="52%" stopColor="#eaf4fe" />
-          <stop offset="100%" stopColor="#90caf9" />
+          <stop offset="52%" stopColor="#F2FDFE" />
+          <stop offset="100%" stopColor="#9FE6F0" />
         </linearGradient>
       </defs>
       <g
