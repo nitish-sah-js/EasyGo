@@ -23,23 +23,64 @@ const TILE_CONFIG: Record<TileType, { url: string; attribution: string; maxZoom:
   },
 };
 
-function markerIcon(type: MapMarker["type"], active: boolean): L.DivIcon {
+/**
+ * `L.divIcon` re-renders this markup to a fresh node on every `active`
+ * toggle, so a CSS *transition* would have nothing to interpolate from — a
+ * keyframe `animation` plays correctly on that fresh node instead, which is
+ * what gives the marker its placement pop and its "just selected" bounce.
+ */
+function markerIcon(type: MapMarker["type"], active: boolean, placeDelayMs: number): L.DivIcon {
   const style = markerStyle[type];
   const Icon = style.icon;
   const html = renderToStaticMarkup(
     <span
-      className={cn(
-        "flex h-9 w-9 items-center justify-center rounded-full shadow-lift ring-2 ring-white/90",
-        style.pin,
-        style.text,
-        type === "destination" && "shadow-[0_0_18px_rgba(255,109,0,0.55)]",
-        active && "scale-110 ring-4 ring-[#FF6D00] shadow-[0_0_22px_rgba(255,109,0,0.75)]",
-      )}
+      className={cn("nt-marker-in", active && "nt-marker-selected")}
+      style={{ animationDelay: active ? "0ms" : `${placeDelayMs}ms` }}
     >
-      <Icon className="h-4 w-4" />
+      <span
+        className={cn(
+          "flex h-9 w-9 items-center justify-center rounded-full shadow-lift ring-2 ring-white/90",
+          style.pin,
+          style.text,
+          type === "destination" && "shadow-[0_0_18px_rgba(255,109,0,0.55)]",
+          active && "scale-110 ring-4 ring-[#FF6D00] shadow-[0_0_22px_rgba(255,109,0,0.75)]",
+        )}
+      >
+        <Icon className="h-4 w-4" />
+      </span>
     </span>,
   );
   return L.divIcon({ html, className: "", iconSize: [36, 36], iconAnchor: [18, 18] });
+}
+
+/**
+ * One marker, memoizing its own icon so a *different* marker being selected
+ * doesn't recreate this one's DOM node (`L.Marker.setIcon` swaps the element
+ * outright) — without that, every pin on the map would replay its pop-in
+ * animation on every click, not just the one that was actually toggled.
+ */
+function AnimatedMarker({
+  marker,
+  active,
+  placeDelayMs,
+  onSelect,
+}: {
+  marker: MapMarker;
+  active: boolean;
+  placeDelayMs: number;
+  onSelect: () => void;
+}) {
+  const hasMounted = useRef(false);
+  const icon = useMemo(() => {
+    const delay = hasMounted.current ? 0 : placeDelayMs;
+    hasMounted.current = true;
+    return markerIcon(marker.type, active, delay);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [marker.type, active]);
+
+  return (
+    <Marker position={[marker.latitude, marker.longitude]} icon={icon} eventHandlers={{ click: onSelect }} />
+  );
 }
 
 /** Frames every marker once on mount, keeping the destination as the initial center. */
@@ -155,15 +196,16 @@ export function LeafletMap({
         {routePoints.length > 1 ? (
           <Polyline
             positions={routePoints}
-            pathOptions={{ color: "#FF9E00", weight: 2, opacity: 0.9, dashArray: "5 5" }}
+            pathOptions={{ color: "#FF9E00", weight: 2, opacity: 0.9, dashArray: "5 5", className: "nt-route-draw" }}
           />
         ) : null}
-        {markers.map((marker) => (
-          <Marker
+        {markers.map((marker, index) => (
+          <AnimatedMarker
             key={marker.id}
-            position={[marker.latitude, marker.longitude]}
-            icon={markerIcon(marker.type, marker.id === selectedId)}
-            eventHandlers={{ click: () => onSelect(marker.id === selectedId ? null : marker.id) }}
+            marker={marker}
+            active={marker.id === selectedId}
+            placeDelayMs={index * 90}
+            onSelect={() => onSelect(marker.id === selectedId ? null : marker.id)}
           />
         ))}
       </MapContainer>

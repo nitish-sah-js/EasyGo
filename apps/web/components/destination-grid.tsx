@@ -53,7 +53,7 @@ function FeaturedCard({ destination }: { destination: Destination }) {
                 </Chip>
               ))}
             </div>
-            <span className="inline-flex h-12 items-center gap-2 whitespace-nowrap rounded-full bg-white px-6 text-base font-semibold text-brand-800 shadow-ink transition duration-200 ease-out group-hover:-translate-y-0.5 group-hover:gap-3 group-hover:shadow-lift motion-reduce:transform-none">
+            <span className="inline-flex h-12 items-center gap-2 whitespace-nowrap rounded-full bg-primary-orange px-6 text-base font-semibold text-white shadow-ink transition duration-200 ease-out group-hover:-translate-y-0.5 group-hover:gap-3 group-hover:shadow-glow motion-reduce:transform-none">
               Plan this trip
               <ArrowRight className="h-[1.125rem] w-[1.125rem] shrink-0" />
             </span>
@@ -83,7 +83,7 @@ function CompactCard({ destination }: { destination: Destination }) {
               <h3 className="text-lg font-bold tracking-tight text-white">{destination.city}</h3>
               <p className="truncate text-xs text-white/80">{destination.region}</p>
             </div>
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-brand-800 shadow-card transition duration-200 ease-out group-hover:-translate-y-0.5 group-hover:shadow-lift motion-reduce:transform-none">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-orange text-white shadow-card transition duration-200 ease-out group-hover:-translate-y-0.5 group-hover:shadow-glow motion-reduce:transform-none">
               <ArrowRight className="h-[1.15rem] w-[1.15rem]" />
             </span>
           </div>

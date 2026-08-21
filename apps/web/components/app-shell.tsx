@@ -119,7 +119,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </Link>
                   <span
                     title={user.name}
-                    className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-brand-200 to-brand-200 text-sm font-bold text-brand-800 ring-2 ring-white"
+                    className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-brand-100 to-brand-300 text-sm font-bold text-brand-800 ring-2 ring-white"
                   >
                     {initialsOf(user.name)}
                   </span>

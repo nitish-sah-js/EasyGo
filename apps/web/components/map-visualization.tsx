@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import { AnimatePresence, motion } from "framer-motion";
 import { Hotel, MapPin, Navigation, Utensils, X } from "lucide-react";
 import type { Attraction, Hotel as HotelType, Restaurant, TripResultPayload } from "@nexttour/shared";
 import { Chip } from "@/components/ui/chip";
+import { StaggerGroup, StaggerItem } from "@/components/motion/stagger";
+import { popIn } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 export type MarkerType = "destination" | "hotel" | "attraction" | "restaurant";
@@ -108,40 +111,51 @@ export function MapVisualization({
       <div className="relative aspect-[16/11] min-h-[300px] overflow-hidden rounded-2xl border border-[#3C096C]/40 bg-[#240046] shadow-[0_20px_60px_-20px_rgba(36,0,70,0.55)]">
         <LeafletMap markers={markers} selectedId={selectedId} onSelect={setSelectedId} />
 
-        {selected ? (
-          <div className="absolute bottom-4 left-1/2 w-[min(20rem,calc(100%-2rem))] -translate-x-1/2 rounded-2xl border border-[#9D4EDD]/25 bg-[#240046]/92 p-4 shadow-[0_20px_50px_-20px_rgba(36,0,70,0.65)] backdrop-blur">
-            <button
-              type="button"
-              aria-label="Close"
-              onClick={() => setSelectedId(null)}
-              className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full text-[#D8CFE3] transition duration-200 ease-out hover:bg-white/10 hover:text-white active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9D4EDD] motion-reduce:transition-none"
+        <AnimatePresence>
+          {selected ? (
+            <motion.div
+              key={selected.id}
+              variants={popIn}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="absolute bottom-4 left-1/2 w-[min(20rem,calc(100%-2rem))] -translate-x-1/2 rounded-2xl border border-[#9D4EDD]/25 bg-[#240046]/92 p-4 shadow-[0_20px_50px_-20px_rgba(36,0,70,0.65)] backdrop-blur"
             >
-              <X className="h-4 w-4 shrink-0" />
-            </button>
-            <Chip tone="onInk" className="text-[0.65rem]">
-              {markerStyle[selected.type].label}
-            </Chip>
-            <h4 className="mt-2 pr-6 text-base font-bold tracking-tight text-white">
-              {selected.label}
-            </h4>
-            {selected.detail ? (
-              <p className="mt-0.5 text-xs capitalize text-[#D8CFE3]/80">{selected.detail}</p>
-            ) : null}
-            <p className="mt-2 text-xs tabular-nums text-[#D8CFE3]/60">
-              {selected.latitude.toFixed(4)}, {selected.longitude.toFixed(4)}
-            </p>
-          </div>
-        ) : null}
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={() => setSelectedId(null)}
+                className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full text-[#D8CFE3] transition duration-200 ease-out hover:bg-white/10 hover:text-white active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9D4EDD] motion-reduce:transition-none"
+              >
+                <X className="h-4 w-4 shrink-0" />
+              </button>
+              <Chip tone="onInk" className="text-[0.65rem]">
+                {markerStyle[selected.type].label}
+              </Chip>
+              <h4 className="mt-2 pr-6 text-base font-bold tracking-tight text-white">
+                {selected.label}
+              </h4>
+              {selected.detail ? (
+                <p className="mt-0.5 text-xs capitalize text-[#D8CFE3]/80">{selected.detail}</p>
+              ) : null}
+              <p className="mt-2 text-xs tabular-nums text-[#D8CFE3]/60">
+                {selected.latitude.toFixed(4)}, {selected.longitude.toFixed(4)}
+              </p>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <StaggerGroup onMount stagger={0.05} className="flex flex-wrap gap-2">
         {(Object.keys(markerStyle) as MarkerType[]).map((type) => {
           const style = markerStyle[type];
           const Icon = style.icon;
           const count = markers.filter((marker) => marker.type === type).length;
           if (count === 0) return null;
           return (
-            <span
+            <StaggerItem
+              as="div"
+              size="sm"
               key={type}
               className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-xs font-medium text-muted-foreground"
             >
@@ -149,10 +163,10 @@ export function MapVisualization({
                 <Icon className="h-2.5 w-2.5" />
               </span>
               {style.label} · {count}
-            </span>
+            </StaggerItem>
           );
         })}
-      </div>
+      </StaggerGroup>
     </div>
   );
 }
