@@ -1,7 +1,12 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { ArrowRight, Bus, Clock, Plane, Repeat, Sparkles, Train } from "lucide-react";
-import { formatInr, formatMinutes, type RouteOption, type TransportMode } from "@nexttour/shared";
+import { formatInr, formatMinutes, type RouteOption, type TrainClassCode, type TransportMode } from "@nexttour/shared";
 import { Chip, type ChipTone } from "@/components/ui/chip";
 import { IconTile, type IconTone } from "@/components/ui/icon-tile";
+import { TrainClassChips } from "@/components/train-class-picker";
+import { TRAIN_CLASS_PREFERENCE_KEY } from "@/lib/train-class-preference";
 import { cn } from "@/lib/utils";
 
 const modeIcon: Record<TransportMode, typeof Plane> = {
@@ -41,6 +46,31 @@ export function RouteCard({ route, recommended = false }: { route: RouteOption; 
   const Icon = modeIcon[primaryMode];
   const first = route.segments[0];
   const last = route.segments[route.segments.length - 1];
+
+  const [selectedClassBySegment, setSelectedClassBySegment] = useState<Record<string, TrainClassCode>>({});
+
+  // Seeds the search-time class preference onto whichever train segments offer
+  // it, once, after mount — never on the server, so there is nothing to
+  // mismatch during hydration.
+  useEffect(() => {
+    const preferred = sessionStorage.getItem(TRAIN_CLASS_PREFERENCE_KEY) as TrainClassCode | null;
+    if (!preferred) return;
+    setSelectedClassBySegment((current) => {
+      let changed = false;
+      const next = { ...current };
+      for (const segment of route.segments) {
+        if (segment.mode !== "TRAIN" || next[segment.id]) continue;
+        if (segment.trainClasses?.some((trainClass) => trainClass.code === preferred)) {
+          next[segment.id] = preferred;
+          changed = true;
+        }
+      }
+      return changed ? next : current;
+    });
+    // Preference is read once per mount; the effect intentionally does not
+    // depend on `route`, which is stable for the lifetime of this card.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <article
@@ -102,6 +132,7 @@ export function RouteCard({ route, recommended = false }: { route: RouteOption; 
         <div className="mt-5 space-y-3 border-t border-border pt-5">
           {route.segments.map((segment) => {
             const SegmentIcon = modeIcon[segment.mode];
+            const trainClasses = segment.mode === "TRAIN" ? segment.trainClasses : undefined;
             return (
               <div
                 key={segment.id}
@@ -134,6 +165,17 @@ export function RouteCard({ route, recommended = false }: { route: RouteOption; 
                     align="right"
                   />
                 </div>
+                {trainClasses?.length ? (
+                  <div className="sm:col-span-2">
+                    <TrainClassChips
+                      classes={trainClasses}
+                      selected={selectedClassBySegment[segment.id]}
+                      onSelect={(code) =>
+                        setSelectedClassBySegment((current) => ({ ...current, [segment.id]: code }))
+                      }
+                    />
+                  </div>
+                ) : null}
               </div>
             );
           })}

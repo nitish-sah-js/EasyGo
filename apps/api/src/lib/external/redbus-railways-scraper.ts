@@ -121,6 +121,13 @@ export interface RawTrainResult {
   cheapestFare: number | null;
   /** Class-wise fares, e.g. { SL: 150, "3A": 520, "2A": 725 }. */
   classFares: Record<string, number>;
+  /**
+   * Class-wise seat status, parsed from the same text as `classFares` (redBus
+   * renders "SL ₹150 Available 1 ... 3A ₹520 WL 4 ..."). "UNKNOWN" means no
+   * status token was found next to that class's fare — a parsing gap, not a
+   * signal that the class is unavailable.
+   */
+  classAvailability: Record<string, { status: "AVAILABLE" | "WAITLIST" | "RAC" | "NOT_AVAILABLE" | "UNKNOWN"; count?: number }>;
   /** Actual boarding/dropping stations, which may differ from the requested pair. */
   boardingStation: string | null;
   droppingStation: string | null;
@@ -392,12 +399,33 @@ export class RedbusRailwaysScraper {
             ? Number(duration[1]) * 60 + (duration[2] ? Number(duration[2]) : 0)
             : null;
 
-          // Class-wise fares: "SL ₹150 Available 1 ... 3A ₹520 ..."
+          // Class-wise fares and seat status: "SL ₹150 Available 1 ... 3A ₹520 WL 4 ..."
           const classFares: Record<string, number> = {};
-          for (const match of text.matchAll(/\b(SL|1A|2A|3A|3E|CC|EC|2S|FC)\b\s*(?:Rs\.?|₹)\s?([\d,]+)/gi)) {
+          const classAvailability: Record<
+            string,
+            { status: "AVAILABLE" | "WAITLIST" | "RAC" | "NOT_AVAILABLE" | "UNKNOWN"; count?: number }
+          > = {};
+          for (const match of text.matchAll(
+            /\b(SL|1A|2A|3A|3E|CC|EC|2S|FC)\b\s*(?:Rs\.?|₹)\s?([\d,]+)\s*(Available\s*(\d+)?|WL\s*(\d+)?|RAC\s*(\d+)?|Regret|Not\s*Available)?/gi,
+          )) {
             const cls = (match[1] ?? "").toUpperCase();
             const fare = Number((match[2] ?? "").replace(/,/g, ""));
-            if (cls && Number.isFinite(fare) && fare > 0 && classFares[cls] === undefined) classFares[cls] = fare;
+            if (!cls || !Number.isFinite(fare) || fare <= 0) continue;
+            if (classFares[cls] === undefined) classFares[cls] = fare;
+            if (classAvailability[cls] === undefined) {
+              const statusText = match[3] ?? "";
+              if (/^Available/i.test(statusText)) {
+                classAvailability[cls] = { status: "AVAILABLE", ...(match[4] ? { count: Number(match[4]) } : {}) };
+              } else if (/^WL/i.test(statusText)) {
+                classAvailability[cls] = { status: "WAITLIST", ...(match[5] ? { count: Number(match[5]) } : {}) };
+              } else if (/^RAC/i.test(statusText)) {
+                classAvailability[cls] = { status: "RAC", ...(match[6] ? { count: Number(match[6]) } : {}) };
+              } else if (/^(Regret|Not\s*Available)/i.test(statusText)) {
+                classAvailability[cls] = { status: "NOT_AVAILABLE" };
+              } else {
+                classAvailability[cls] = { status: "UNKNOWN" };
+              }
+            }
           }
           const fares = Object.values(classFares);
           const anyFare = text.match(/(?:Rs\.?|₹)\s?([\d,]+)/)?.[1];
@@ -437,6 +465,7 @@ export class RedbusRailwaysScraper {
             price: cheapestFare !== null ? String(cheapestFare) : null,
             cheapestFare,
             classFares,
+            classAvailability,
             boardingStation: stationPairs[0] ?? null,
             droppingStation: stationPairs[1] ?? null,
             rawText: text.slice(0, 600),

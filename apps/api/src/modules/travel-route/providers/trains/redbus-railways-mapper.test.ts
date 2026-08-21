@@ -18,6 +18,11 @@ function train(overrides: Partial<RawTrainResult> = {}): RawTrainResult {
     price: "930",
     cheapestFare: 930,
     classFares: { SL: 930, "3A": 2480, "2A": 3595 },
+    classAvailability: {
+      SL: { status: "AVAILABLE", count: 12 },
+      "3A": { status: "WAITLIST", count: 4 },
+      "2A": { status: "UNKNOWN" },
+    },
     boardingStation: "Patna Jn",
     droppingStation: "Madgaon Jn",
     rawText: "12742 Vasco Da Gama Exp 02:05 PM 40h 05min 06:10 AM SL ₹930 3A ₹2,480",
@@ -67,10 +72,34 @@ describe("toTransportOptions", () => {
     expect(option?.durationMinutes).toBe(308);
   });
 
-  it("prices from the cheapest class and records the class-wise fares", () => {
+  it("prices from the cheapest class and structures each class's fare, AC flag and availability", () => {
     const [option] = toTransportOptions(result([train()]), origin, destination, DATE, PROVIDER);
     expect(option?.price).toBe(930);
-    expect(option?.metadata?.classes).toEqual(["SL:930", "3A:2480", "2A:3595"]);
+    expect(option?.trainClasses).toEqual([
+      { code: "2A", label: "2nd AC", ac: true, fare: 3595, availability: "UNKNOWN" },
+      { code: "3A", label: "3rd AC", ac: true, fare: 2480, availability: "WAITLIST", availableCount: 4 },
+      { code: "SL", label: "Sleeper", ac: false, fare: 930, availability: "AVAILABLE", availableCount: 12 },
+    ]);
+  });
+
+  it("marks a class UNKNOWN rather than unavailable when no status text was parsed", () => {
+    const [option] = toTransportOptions(result([train()]), origin, destination, DATE, PROVIDER);
+    const secondAc = option?.trainClasses?.find((cls) => cls.code === "2A");
+    expect(secondAc).toEqual({ code: "2A", label: "2nd AC", ac: true, fare: 3595, availability: "UNKNOWN" });
+  });
+
+  it("marks a class NOT_AVAILABLE only when redBus explicitly said so", () => {
+    const [option] = toTransportOptions(
+      result([
+        train({
+          classFares: { SL: 930, "1A": 5200 },
+          classAvailability: { SL: { status: "AVAILABLE" }, "1A": { status: "NOT_AVAILABLE" } },
+        }),
+      ]),
+      origin, destination, DATE, PROVIDER,
+    );
+    const firstAc = option?.trainClasses?.find((cls) => cls.code === "1A");
+    expect(firstAc?.availability).toBe("NOT_AVAILABLE");
   });
 
   it("surfaces an alternate boarding station instead of the requested one", () => {

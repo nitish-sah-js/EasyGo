@@ -1,8 +1,39 @@
-import { addMinutesToIso, isoAtIndiaClock, minutesBetween, type LocationPoint, type TransportOption } from "@nexttour/shared";
+import {
+  TRAIN_CLASS_INFO,
+  addMinutesToIso,
+  isoAtIndiaClock,
+  minutesBetween,
+  type LocationPoint,
+  type TrainClassCode,
+  type TrainClassOption,
+  type TransportOption,
+} from "@nexttour/shared";
 import type { RailwaySearchResult, RawTrainResult } from "../../../../lib/external/redbus-railways-scraper";
 
 /** Sanity bound: the longest scheduled Indian Railways run is a little over three days. */
 const MAX_JOURNEY_MINUTES = 96 * 60;
+
+/** Premium-to-economy, AC classes before non-AC, for a stable chip order. */
+const CLASS_ORDER: TrainClassCode[] = ["1A", "2A", "3A", "3E", "CC", "EC", "SL", "2S", "FC"];
+
+function buildTrainClasses(train: RawTrainResult): TrainClassOption[] {
+  return CLASS_ORDER.flatMap((code) => {
+    const fare = train.classFares[code];
+    if (fare === undefined) return [];
+    const info = TRAIN_CLASS_INFO[code];
+    const availability = train.classAvailability?.[code];
+    return [
+      {
+        code,
+        label: info.label,
+        ac: info.ac,
+        fare,
+        availability: availability?.status ?? "UNKNOWN",
+        ...(availability?.count !== undefined ? { availableCount: availability.count } : {}),
+      },
+    ];
+  });
+}
 
 function parseClock(raw: string): string | undefined {
   const match = raw.trim().match(/^(\d{1,2}):(\d{2})\s?(AM|PM)?$/i);
@@ -74,7 +105,7 @@ export function toTransportOptions(
         ? { ...destination, name: train.droppingStation }
         : destination;
 
-      const classFareEntries = Object.entries(train.classFares);
+      const trainClasses = buildTrainClasses(train);
 
       const option: TransportOption = {
         id: `redbus-train-${train.trainNumber}-${departureDate}`,
@@ -104,16 +135,10 @@ export function toTransportOptions(
         ],
         source: "REAL",
         fetchedAt,
-        ...(classFareEntries.length > 0
-          ? {
-              metadata: {
-                classes: classFareEntries.map(([cls, fare]) => `${cls}:${fare}`),
-                ...(train.boardingStation && train.boardingStation !== origin.name
-                  ? { alternateBoarding: train.boardingStation }
-                  : {}),
-              },
-            }
+        ...(train.boardingStation && train.boardingStation !== origin.name
+          ? { metadata: { alternateBoarding: train.boardingStation } }
           : {}),
+        ...(trainClasses.length > 0 ? { trainClasses } : {}),
       };
 
       return option;

@@ -64,6 +64,36 @@ export interface TransportSegment {
   serviceNumber?: string;
 }
 
+export const TRAIN_CLASS_CODES = ["1A", "2A", "3A", "3E", "CC", "EC", "SL", "2S", "FC"] as const;
+export type TrainClassCode = (typeof TRAIN_CLASS_CODES)[number];
+
+export const TRAIN_AVAILABILITY_STATUSES = ["AVAILABLE", "RAC", "WAITLIST", "NOT_AVAILABLE", "UNKNOWN"] as const;
+export type TrainAvailabilityStatus = (typeof TRAIN_AVAILABILITY_STATUSES)[number];
+
+/** A single coach-class fare/availability offered on a real (RedBus-sourced) train. */
+export interface TrainClassOption {
+  code: TrainClassCode;
+  label: string;
+  ac: boolean;
+  fare: number;
+  /** "UNKNOWN" when redBus's page didn't render a parseable status — never treat as unavailable. */
+  availability: TrainAvailabilityStatus;
+  availableCount?: number;
+}
+
+/** Human label, blurb and AC/Non-AC flag for each Indian Railways coach-class code. */
+export const TRAIN_CLASS_INFO: Record<TrainClassCode, { label: string; description: string; ac: boolean }> = {
+  "1A": { label: "1st AC", description: "Premium, private and most comfortable", ac: true },
+  "2A": { label: "2nd AC", description: "Comfortable AC coach, AC 2-Tier", ac: true },
+  "3A": { label: "3rd AC", description: "Affordable AC coach, AC 3-Tier", ac: true },
+  "3E": { label: "3rd AC Economy", description: "Budget AC coach", ac: true },
+  CC: { label: "AC Chair Car", description: "AC seating for day journeys", ac: true },
+  EC: { label: "Executive Chair Car", description: "Premium AC seating", ac: true },
+  SL: { label: "Sleeper", description: "Non-AC sleeper coach", ac: false },
+  "2S": { label: "General / Second Sitting", description: "Basic non-reserved travel", ac: false },
+  FC: { label: "First Class", description: "Non-AC private compartment", ac: false },
+};
+
 export interface TransportOption {
   id: string;
   provider: string;
@@ -84,6 +114,8 @@ export interface TransportOption {
   fetchedAt: string;
   amenities?: string[];
   metadata?: Record<string, string | number | boolean | string[]>;
+  /** Populated for TRAIN options with at least one parsed coach-class fare. */
+  trainClasses?: TrainClassOption[];
 }
 
 export interface TransportSearchRequest {

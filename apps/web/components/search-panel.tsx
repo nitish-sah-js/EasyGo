@@ -3,8 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Bus, CalendarDays, MapPin, Navigation, Plane, Search, Train, Users } from "lucide-react";
-import { CITY_COORDINATES, type TransportMode } from "@nexttour/shared";
+import { CITY_COORDINATES, type TrainClassCode, type TransportMode } from "@nexttour/shared";
 import { Button } from "@/components/ui/button";
+import { TrainClassPreferencePicker } from "@/components/train-class-picker";
+import { TRAIN_CLASS_PREFERENCE_KEY } from "@/lib/train-class-preference";
 import { cn } from "@/lib/utils";
 
 const tabs: Array<{ mode: TransportMode; label: string; icon: typeof Plane }> = [
@@ -31,9 +33,15 @@ export function SearchPanel() {
   const [destination, setDestination] = useState("");
   const [departureDate, setDepartureDate] = useState("");
   const [travelers, setTravelers] = useState("2");
+  const [trainClass, setTrainClass] = useState<TrainClassCode | undefined>(undefined);
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
+    if (mode === "TRAIN" && trainClass) {
+      sessionStorage.setItem(TRAIN_CLASS_PREFERENCE_KEY, trainClass);
+    } else {
+      sessionStorage.removeItem(TRAIN_CLASS_PREFERENCE_KEY);
+    }
     const params = new URLSearchParams({ transport: mode, travelers });
     if (origin.trim()) params.set("origin", origin.trim());
     if (destination.trim()) params.set("destination", destination.trim());
@@ -128,6 +136,12 @@ export function SearchPanel() {
           Plan My Trip
         </Button>
       </div>
+
+      {mode === "TRAIN" ? (
+        <div className="border-t border-border px-3 pb-3 pt-3">
+          <TrainClassPreferencePicker value={trainClass} onChange={setTrainClass} />
+        </div>
+      ) : null}
     </form>
   );
 }
