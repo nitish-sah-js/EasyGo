@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
   CalendarDays,
@@ -14,6 +15,8 @@ import {
 } from "lucide-react";
 import { formatInr } from "@nexttour/shared";
 import { AuthGuard } from "@/components/auth-guard";
+import { Reveal } from "@/components/motion/reveal";
+import { StaggerGroup, StaggerItem } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
@@ -49,20 +52,22 @@ export default function TripsPage() {
   return (
     <AuthGuard>
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <SectionHeading
-          title="My Trips"
-          subtitle={
-            data ? `${data.total} ${data.total === 1 ? "journey" : "journeys"} planned` : "Manage your journeys"
-          }
-          action={
-            <Link href="/plan">
-              <Button shape="pill">
-                <Plus />
-                New trip
-              </Button>
-            </Link>
-          }
-        />
+        <Reveal onMount>
+          <SectionHeading
+            title="My Trips"
+            subtitle={
+              data ? `${data.total} ${data.total === 1 ? "journey" : "journeys"} planned` : "Manage your journeys"
+            }
+            action={
+              <Link href="/plan">
+                <Button shape="pill">
+                  <Plus />
+                  New trip
+                </Button>
+              </Link>
+            }
+          />
+        </Reveal>
 
         {isLoading ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -84,61 +89,71 @@ export default function TripsPage() {
           </p>
         ) : null}
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {data?.trips.map((trip) => (
-            <Card key={trip.id} className="group overflow-hidden transition hover:shadow-lift">
-              <PlaceImage
-                src={cityPhotoUrl(trip.destination, 400)}
-                alt={trip.destination}
-                seed={trip.destination}
-                scrim
-                className="h-36"
+        <StaggerGroup onMount stagger={0.07} className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <AnimatePresence mode="popLayout">
+            {data?.trips.map((trip) => (
+              <StaggerItem
+                key={trip.id}
+                layout
+                exit={{ opacity: 0, scale: 0.92, transition: { duration: 0.22 } }}
+                whileHover={{ y: -4 }}
+                transition={{ type: "spring", stiffness: 380, damping: 32 }}
               >
-                <div className="flex h-full flex-col justify-between p-4">
-                  <Chip tone="onInk" className="self-start">
-                    {statusLabel(trip.status)}
-                  </Chip>
-                  <div className="flex items-center gap-1.5 text-white">
-                    <MapPin className="h-4 w-4 shrink-0" />
-                    <h3 className="truncate text-lg font-bold tracking-tight">
-                      {trip.origin} → {trip.destination}
-                    </h3>
-                  </div>
-                </div>
-              </PlaceImage>
-
-              <CardContent className="space-y-4 pt-5">
-                <dl className="grid grid-cols-3 gap-3 text-xs">
-                  <Meta icon={<CalendarDays className="h-3.5 w-3.5" />} label="Dates" value={formatDate(trip.departureDate)} />
-                  <Meta icon={<Users className="h-3.5 w-3.5" />} label="Party" value={`${trip.travelers}`} />
-                  <Meta icon={<Wallet className="h-3.5 w-3.5" />} label="Budget" value={formatInr(trip.budget)} />
-                </dl>
-
-                <div className="flex items-center gap-2 border-t border-border pt-4">
-                  <Link href={`/trips/${trip.id}/result`} className="flex-1">
-                    <Button block>
-                      View plan
-                      <ArrowRight />
-                    </Button>
-                  </Link>
-                  <Link href={`/trips/${trip.id}`}>
-                    <Button variant="secondary">Details</Button>
-                  </Link>
-                  <Button
-                    aria-label={`Delete ${trip.origin} to ${trip.destination} trip`}
-                    size="icon"
-                    variant="ghost"
-                    disabled={deleteMutation.isPending}
-                    onClick={() => deleteMutation.mutate(trip.id)}
-                    className="text-blush-600 hover:bg-blush-100 hover:text-blush-700"
+                <Card className="group overflow-hidden transition-shadow hover:shadow-lift">
+                  <PlaceImage
+                    src={cityPhotoUrl(trip.destination, 400)}
+                    alt={trip.destination}
+                    seed={trip.destination}
+                    scrim
+                    className="h-36"
                   >
-                    <Trash2 />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                    <div className="flex h-full flex-col justify-between p-4">
+                      <Chip tone="onInk" className="self-start">
+                        {statusLabel(trip.status)}
+                      </Chip>
+                      <div className="flex items-center gap-1.5 text-white">
+                        <MapPin className="h-4 w-4 shrink-0" />
+                        <h3 className="truncate text-lg font-bold tracking-tight">
+                          {trip.origin} → {trip.destination}
+                        </h3>
+                      </div>
+                    </div>
+                  </PlaceImage>
+
+                  <CardContent className="space-y-4 pt-5">
+                    <dl className="grid grid-cols-3 gap-3 text-xs">
+                      <Meta icon={<CalendarDays className="h-3.5 w-3.5" />} label="Dates" value={formatDate(trip.departureDate)} />
+                      <Meta icon={<Users className="h-3.5 w-3.5" />} label="Party" value={`${trip.travelers}`} />
+                      <Meta icon={<Wallet className="h-3.5 w-3.5" />} label="Budget" value={formatInr(trip.budget)} />
+                    </dl>
+
+                    <div className="flex items-center gap-2 border-t border-border pt-4">
+                      <Link href={`/trips/${trip.id}/result`} className="flex-1">
+                        <Button block>
+                          View plan
+                          <ArrowRight />
+                        </Button>
+                      </Link>
+                      <Link href={`/trips/${trip.id}`}>
+                        <Button variant="secondary">Details</Button>
+                      </Link>
+                      <Button
+                        aria-label={`Delete ${trip.origin} to ${trip.destination} trip`}
+                        size="icon"
+                        variant="ghost"
+                        disabled={deleteMutation.isPending}
+                        onClick={() => deleteMutation.mutate(trip.id)}
+                        className="text-blush-600 hover:bg-blush-100 hover:text-blush-700"
+                      >
+                        <Trash2 />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
+            ))}
+          </AnimatePresence>
+        </StaggerGroup>
 
         {data?.trips.length === 0 ? (
           <Card className="border-dashed">

@@ -17,6 +17,8 @@ import {
 import { formatInr } from "@nexttour/shared";
 import { AuthGuard } from "@/components/auth-guard";
 import { PageHero } from "@/components/page-hero";
+import { Reveal } from "@/components/motion/reveal";
+import { StaggerGroup, StaggerItem } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
@@ -46,38 +48,40 @@ export default function TripPage() {
   return (
     <AuthGuard>
       <section className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-        <PageHero
-          eyebrow={<Chip tone="onInk">{statusLabel(trip?.status) ?? "Trip"}</Chip>}
-          title={trip ? `${trip.origin} to ${trip.destination}` : "Loading trip…"}
-          {...(trip
-            ? {
-                meta: `${formatDate(trip.departureDate)} – ${formatDate(trip.returnDate)} · ${
-                  trip.travelers
-                } ${trip.travelers === 1 ? "traveler" : "travelers"}`,
-              }
-            : {})}
-          action={
-            trip && (trip.status === "PENDING" || trip.status === "FAILED") ? (
-              <Button
-                size="lg"
-                variant="onInkSolid"
-                shape="pill"
-                onClick={() => mutation.mutate()}
-                disabled={mutation.isPending}
-              >
-                <Play />
-                {mutation.isPending ? "Starting…" : "Start planning"}
-              </Button>
-            ) : trip ? (
-              <Link href={`/trips/${params.id}/result`}>
-                <Button size="lg" variant="onInkSolid" shape="pill">
-                  <Sparkles />
-                  View plan
+        <Reveal onMount>
+          <PageHero
+            eyebrow={<Chip tone="onInk">{statusLabel(trip?.status) ?? "Trip"}</Chip>}
+            title={trip ? `${trip.origin} to ${trip.destination}` : "Loading trip…"}
+            {...(trip
+              ? {
+                  meta: `${formatDate(trip.departureDate)} – ${formatDate(trip.returnDate)} · ${
+                    trip.travelers
+                  } ${trip.travelers === 1 ? "traveler" : "travelers"}`,
+                }
+              : {})}
+            action={
+              trip && (trip.status === "PENDING" || trip.status === "FAILED") ? (
+                <Button
+                  size="lg"
+                  variant="onInkSolid"
+                  shape="pill"
+                  onClick={() => mutation.mutate()}
+                  disabled={mutation.isPending}
+                >
+                  <Play />
+                  {mutation.isPending ? "Starting…" : "Start planning"}
                 </Button>
-              </Link>
-            ) : null
-          }
-        />
+              ) : trip ? (
+                <Link href={`/trips/${params.id}/result`}>
+                  <Button size="lg" variant="onInkSolid" shape="pill">
+                    <Sparkles />
+                    View plan
+                  </Button>
+                </Link>
+              ) : null
+            }
+          />
+        </Reveal>
 
         {isLoading ? (
           <p className="mt-6 text-sm text-muted-foreground">Loading trip…</p>
@@ -91,51 +95,59 @@ export default function TripPage() {
 
         {trip ? (
           <>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <Card>
-                <CardContent className="pt-6">
-                  <StatTile
-                    tone="soft"
-                    icon={<CalendarDays className="h-5 w-5" />}
-                    label="Dates"
-                    value={`${formatDate(trip.departureDate)} – ${formatDate(trip.returnDate)}`}
-                  />
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <StatTile
-                    tone="base"
-                    icon={<Users className="h-5 w-5" />}
-                    label="Travelers"
-                    value={`${trip.travelers} ${trip.travelers === 1 ? "traveler" : "travelers"}`}
-                  />
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <StatTile
-                    tone="mid"
-                    icon={<Wallet className="h-5 w-5" />}
-                    label="Budget"
-                    value={formatInr(trip.budget)}
-                    hint={`${trip.preferences.travelStyle.replace("_", " ").toLowerCase()} style`}
-                  />
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <StatTile
-                    tone="mid"
-                    icon={<Hotel className="h-5 w-5" />}
-                    label="Stay"
-                    value={trip.preferences.accommodationPreference.replace("_", " ").toLowerCase()}
-                  />
-                </CardContent>
-              </Card>
-            </div>
+            <StaggerGroup onMount stagger={0.07} className="mt-4 grid gap-4 sm:grid-cols-2">
+              <StaggerItem size="sm">
+                <Card>
+                  <CardContent className="pt-6">
+                    <StatTile
+                      tone="soft"
+                      icon={<CalendarDays className="h-5 w-5" />}
+                      label="Dates"
+                      value={`${formatDate(trip.departureDate)} – ${formatDate(trip.returnDate)}`}
+                    />
+                  </CardContent>
+                </Card>
+              </StaggerItem>
+              <StaggerItem size="sm">
+                <Card>
+                  <CardContent className="pt-6">
+                    <StatTile
+                      tone="base"
+                      icon={<Users className="h-5 w-5" />}
+                      label="Travelers"
+                      value={`${trip.travelers} ${trip.travelers === 1 ? "traveler" : "travelers"}`}
+                    />
+                  </CardContent>
+                </Card>
+              </StaggerItem>
+              <StaggerItem size="sm">
+                <Card>
+                  <CardContent className="pt-6">
+                    <StatTile
+                      tone="mid"
+                      icon={<Wallet className="h-5 w-5" />}
+                      label="Budget"
+                      value={formatInr(trip.budget)}
+                      hint={`${trip.preferences.travelStyle.replace("_", " ").toLowerCase()} style`}
+                    />
+                  </CardContent>
+                </Card>
+              </StaggerItem>
+              <StaggerItem size="sm">
+                <Card>
+                  <CardContent className="pt-6">
+                    <StatTile
+                      tone="mid"
+                      icon={<Hotel className="h-5 w-5" />}
+                      label="Stay"
+                      value={trip.preferences.accommodationPreference.replace("_", " ").toLowerCase()}
+                    />
+                  </CardContent>
+                </Card>
+              </StaggerItem>
+            </StaggerGroup>
 
-            <div className="mt-8">
+            <Reveal className="mt-8">
               <SectionHeading title="Your preferences" className="mb-4" />
               <Card>
                 <CardContent className="space-y-5 pt-6">
@@ -156,7 +168,7 @@ export default function TripPage() {
                   />
                 </CardContent>
               </Card>
-            </div>
+            </Reveal>
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <Link href={`/trips/${params.id}/planning`}>

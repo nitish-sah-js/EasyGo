@@ -25,11 +25,11 @@ export function HeroCopy() {
         <h1 className="mx-auto max-w-4xl text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-6xl">
           Plan Your Journey.
           <br />
-          <span className="text-brand-200">Discover More.</span>
+          <span className="text-brand-400">Discover More.</span>
         </h1>
       </StaggerItem>
       <StaggerItem>
-        <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-brand-100 sm:text-lg">
+        <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-brand-200 sm:text-lg">
           Orchestrate the entire trip in one place — compare every way to get there, find a
           place to stay, and leave with a day-by-day itinerary that fits your budget.
         </p>

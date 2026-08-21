@@ -28,7 +28,7 @@ export function StaggerGroup({
   children,
   ...props
 }: StaggerGroupProps) {
-  const MotionTag = motion[as];
+  const MotionTag = motion[as] as React.ElementType;
   return (
     <MotionTag
       className={className}
@@ -48,7 +48,7 @@ export interface StaggerItemProps extends Omit<HTMLMotionProps<"div">, "variants
 }
 
 export function StaggerItem({ size = "md", as = "div", className, children, ...props }: StaggerItemProps) {
-  const MotionTag = motion[as];
+  const MotionTag = motion[as] as React.ElementType;
   return (
     <MotionTag className={className} variants={size === "sm" ? fadeUpSm : fadeUp} {...props}>
       {children}

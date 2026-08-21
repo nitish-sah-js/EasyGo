@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
@@ -40,9 +41,22 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
 import { IconTile } from "@/components/ui/icon-tile";
 import { Field, Input, Select } from "@/components/ui/input";
+import { easeOut } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/lib/api";
 import type { PlanTripResponse } from "@/types/trips";
+
+const stepVariants = {
+  enter: (direction: number) => ({ opacity: 0, x: direction >= 0 ? 28 : -28 }),
+  center: { opacity: 1, x: 0 },
+  exit: (direction: number) => ({ opacity: 0, x: direction >= 0 ? -28 : 28 }),
+};
+
+const messageVariants = {
+  hidden: { opacity: 0, y: -6, height: 0 },
+  visible: { opacity: 1, y: 0, height: "auto" },
+  exit: { opacity: 0, y: -6, height: 0 },
+};
 
 const steps = [
   { label: "Route", icon: MapPin },
@@ -84,16 +98,18 @@ function OptionButton({
   onClick: () => void;
 }) {
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onClick}
       aria-pressed={selected}
+      whileTap={{ scale: 0.96 }}
+      animate={{ scale: selected ? 1.03 : 1 }}
+      transition={{ type: "spring", stiffness: 500, damping: 30 }}
       className={cn(
         "inline-flex h-12 items-center gap-2 rounded-[14px] border px-5 text-[0.9375rem] font-semibold capitalize",
-        "transition duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]",
+        "transition-colors duration-200 ease-out hover:-translate-y-0.5",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
         "[&_svg]:h-[1.125rem] [&_svg]:w-[1.125rem] [&_svg]:shrink-0",
-        "motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100",
         selected
           ? "border-brand-400 bg-brand-100 text-brand-800 shadow-sm ring-1 ring-brand-200"
           : "border-border bg-surface text-muted-foreground hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700",
@@ -101,7 +117,7 @@ function OptionButton({
     >
       {icon}
       {label.replace("_", " ").toLowerCase()}
-    </button>
+    </motion.button>
   );
 }
 
@@ -109,6 +125,7 @@ function PlanWizard() {
   const router = useRouter();
   const search = useSearchParams();
   const [step, setStep] = useState(0);
+  const [direction, setDirection] = useState(1);
 
   const defaults = useMemo<TripPlanningInput>(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -153,7 +170,15 @@ function PlanWizard() {
   async function goToNextStep() {
     const fields = fieldsPerStep[step] ?? [];
     const valid = fields.length === 0 ? true : await form.trigger(fields);
-    if (valid) setStep((value) => value + 1);
+    if (valid) {
+      setDirection(1);
+      setStep((value) => value + 1);
+    }
+  }
+
+  function goToPreviousStep() {
+    setDirection(-1);
+    setStep((value) => value - 1);
   }
 
   function toggleTransport(mode: TransportMode) {
@@ -228,8 +253,14 @@ function PlanWizard() {
 
       <form onSubmit={form.handleSubmit((payload) => mutation.mutate(payload))}>
         <Card>
-          <CardContent className="space-y-7 pt-7">
-            <div className="flex items-center gap-3.5 border-b border-border pb-5">
+          <CardContent className="space-y-7 overflow-hidden pt-7">
+            <motion.div
+              key={`header-${step}`}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25, ease: easeOut }}
+              className="flex items-center gap-3.5 border-b border-border pb-5"
+            >
               <IconTile tone="base" size="lg">
                 <StepIcon className="h-6 w-6" />
               </IconTile>
@@ -250,8 +281,18 @@ function PlanWizard() {
                   }
                 </p>
               </div>
-            </div>
+            </motion.div>
 
+            <AnimatePresence mode="wait" custom={direction} initial={false}>
+              <motion.div
+                key={step}
+                custom={direction}
+                variants={stepVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.28, ease: easeOut }}
+              >
             {step === 0 ? (
               <div className="grid gap-5 sm:grid-cols-2">
                 <Field label="Origin" hint="Cities the providers can resolve">
@@ -389,29 +430,54 @@ function PlanWizard() {
                 ))}
               </div>
             ) : null}
+              </motion.div>
+            </AnimatePresence>
 
-            {Object.values(form.formState.errors)[0]?.message ? (
-              <p className="rounded-xl border border-blush-200 bg-blush-100 px-4 py-3 text-sm text-blush-900">
-                {Object.values(form.formState.errors)[0]?.message}
-              </p>
-            ) : null}
-            {mutation.error ? (
-              <p className="rounded-xl border border-blush-200 bg-blush-100 px-4 py-3 text-sm text-blush-900">
-                {mutation.error.message}
-              </p>
-            ) : null}
-            {created ? (
-              <p className="rounded-xl border border-mint-200 bg-mint-100 px-4 py-3 text-sm text-mint-900">
-                Trip created — taking you to the planning screen…
-              </p>
-            ) : null}
+            <AnimatePresence initial={false}>
+              {Object.values(form.formState.errors)[0]?.message ? (
+                <motion.p
+                  key="form-error"
+                  variants={messageVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className="overflow-hidden rounded-xl border border-blush-200 bg-blush-100 px-4 py-3 text-sm text-blush-900"
+                >
+                  {Object.values(form.formState.errors)[0]?.message}
+                </motion.p>
+              ) : null}
+              {mutation.error ? (
+                <motion.p
+                  key="mutation-error"
+                  variants={messageVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className="overflow-hidden rounded-xl border border-blush-200 bg-blush-100 px-4 py-3 text-sm text-blush-900"
+                >
+                  {mutation.error.message}
+                </motion.p>
+              ) : null}
+              {created ? (
+                <motion.p
+                  key="created"
+                  variants={messageVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className="overflow-hidden rounded-xl border border-mint-200 bg-mint-100 px-4 py-3 text-sm text-mint-900"
+                >
+                  Trip created — taking you to the planning screen…
+                </motion.p>
+              ) : null}
+            </AnimatePresence>
 
             <div className="flex flex-col-reverse items-stretch gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
               <Button
                 type="button"
                 variant="secondary"
                 disabled={step === 0}
-                onClick={() => setStep((value) => value - 1)}
+                onClick={goToPreviousStep}
               >
                 <ArrowLeft />
                 Back

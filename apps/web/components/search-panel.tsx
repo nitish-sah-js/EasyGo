@@ -170,7 +170,7 @@ function PanelField({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-white px-3.5 py-2.5 transition focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100">
+    <div className="rounded-xl border border-border bg-white px-3.5 py-2.5 transition duration-200 ease-out focus-within:-translate-y-0.5 focus-within:border-brand-400 focus-within:shadow-card focus-within:ring-4 focus-within:ring-brand-100 motion-reduce:focus-within:translate-y-0">
       <div className="field-label mb-1">{label}</div>
       <div className="flex items-center gap-2 text-brand-700">
         {icon}

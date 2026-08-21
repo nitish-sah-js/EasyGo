@@ -1,5 +1,7 @@
 import type { Transition, Variants } from "framer-motion";
 
+type CubicBezier = [number, number, number, number];
+
 /**
  * One motion language for the whole site. Every variant here animates only
  * `transform`/`opacity` (compositor-only properties), which is what keeps
@@ -9,8 +11,8 @@ import type { Transition, Variants } from "framer-motion";
  * and leaves the opacity fade, so nothing here needs its own media query.
  */
 
-export const easeOut: Transition["ease"] = [0.16, 1, 0.3, 1];
-export const easeInOut: Transition["ease"] = [0.65, 0, 0.35, 1];
+export const easeOut: CubicBezier = [0.16, 1, 0.3, 1];
+export const easeInOut: CubicBezier = [0.65, 0, 0.35, 1];
 
 export const springSnappy: Transition = { type: "spring", stiffness: 420, damping: 34, mass: 0.6 };
 export const springSoft: Transition = { type: "spring", stiffness: 260, damping: 30 };

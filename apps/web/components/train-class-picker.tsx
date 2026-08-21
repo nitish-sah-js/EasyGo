@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
+import { motion } from "framer-motion";
 import { Snowflake } from "lucide-react";
 import {
   TRAIN_CLASS_CODES,
@@ -105,22 +106,28 @@ export function TrainClassChips({
   selected: TrainClassCode | undefined;
   onSelect: (code: TrainClassCode) => void;
 }) {
+  // Scopes the sliding highlight's layoutId to this segment's own chip row —
+  // without it, every segment's TrainClassChips on the results screen would
+  // share one layoutId and the highlight would leap between unrelated cards.
+  const groupId = useId();
+
   return (
     <div className="flex flex-wrap gap-1.5">
       {classes.map((trainClass) => {
         const isSelected = selected === trainClass.code;
         const disabled = trainClass.availability === "NOT_AVAILABLE";
         return (
-          <button
+          <motion.button
             key={trainClass.code}
             type="button"
             disabled={disabled}
             aria-pressed={isSelected}
             onClick={() => onSelect(trainClass.code)}
+            whileTap={disabled ? {} : { scale: 0.96 }}
             title={TRAIN_CLASS_INFO[trainClass.code].description}
             className={cn(
-              "flex min-w-[6.5rem] flex-col items-start gap-1 rounded-xl border px-3 py-2 text-left",
-              "transition duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]",
+              "relative flex min-w-[6.5rem] flex-col items-start gap-1 overflow-hidden rounded-xl border px-3 py-2 text-left",
+              "transition-colors duration-200 ease-out hover:-translate-y-0.5",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
               "disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0",
               isSelected
@@ -128,6 +135,13 @@ export function TrainClassChips({
                 : "border-border bg-surface hover:border-brand-300 hover:bg-brand-50",
             )}
           >
+            {isSelected ? (
+              <motion.span
+                layoutId={`train-class-glow-${groupId}`}
+                transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-accent-100/70 to-transparent"
+              />
+            ) : null}
             <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
               {trainClass.ac ? <Snowflake className="h-3.5 w-3.5 text-brand-600" /> : null}
               {trainClass.label}
@@ -136,7 +150,7 @@ export function TrainClassChips({
             <Chip tone={availabilityTone[trainClass.availability]} className="text-[0.65rem]">
               {withCount(availabilityLabel[trainClass.availability], trainClass.availableCount)}
             </Chip>
-          </button>
+          </motion.button>
         );
       })}
     </div>

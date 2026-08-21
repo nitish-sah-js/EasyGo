@@ -51,7 +51,7 @@ export function FilterChip({
         "disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:hover:translate-y-0",
         "disabled:hover:border-border disabled:hover:bg-surface disabled:hover:text-muted-foreground",
         active
-          ? "border-accent-500 bg-accent-500 text-white shadow-card"
+          ? "border-transparent bg-primary-orange text-white shadow-card"
           : "border-border bg-surface text-muted-foreground hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700",
         className,
       )}

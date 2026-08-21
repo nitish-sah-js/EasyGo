@@ -44,8 +44,10 @@ const buttonVariants = cva(
         // Primary Orange gradient — the one action a screen exists for
         // (Start Planning, Plan My Trip, Search, Book Now, Confirm...).
         default: "bg-primary-orange text-white shadow-card hover:bg-warm-orange hover:shadow-glow",
-        // Vibrant Purple gradient fill — brand-forward supporting actions.
-        secondary: "bg-vibrant-purple text-white shadow-sm hover:shadow-card hover:brightness-110",
+        // Purple-tinted outline, not a gradient fill — kept light on purpose so
+        // it never competes with the orange primary action on the same screen.
+        secondary:
+          "border border-brand-200 bg-surface text-brand-800 shadow-sm hover:border-brand-300 hover:bg-brand-50 hover:shadow-card",
         outline:
           "border border-brand-300 bg-transparent text-brand-700 hover:border-brand-400 hover:bg-brand-50 hover:shadow-card",
         ghost: "text-brand-700 hover:bg-brand-100",

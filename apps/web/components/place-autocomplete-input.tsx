@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Building2, Landmark, MapPin, Plane, TrainFront } from "lucide-react";
 import type { PlaceSuggestion, PlaceSuggestionCategory } from "@nexttour/shared";
 import { usePlaceAutocomplete } from "@/hooks/use-place-autocomplete";
+import { dropdown } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 const categoryIcon: Record<PlaceSuggestionCategory, typeof MapPin> = {
@@ -147,12 +149,18 @@ export function PlaceAutocompleteInput({
         className={className}
       />
 
-      {showDropdown ? (
-        <div
+      <AnimatePresence>
+        {showDropdown ? (
+        <motion.div
           id={`${inputId}-listbox`}
           role="listbox"
           aria-label={`${ariaLabel} suggestions`}
-          className="animate-fade-up absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 max-h-72 min-w-[18rem] overflow-auto rounded-xl border border-border bg-surface p-1.5 shadow-panel"
+          variants={dropdown}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          style={{ transformOrigin: "top" }}
+          className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 max-h-72 min-w-[18rem] overflow-auto rounded-xl border border-border bg-surface p-1.5 shadow-panel"
         >
           {isLoading ? (
             <div className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground">
@@ -207,8 +215,9 @@ export function PlaceAutocompleteInput({
               })}
             </ul>
           )}
-        </div>
-      ) : null}
+        </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }

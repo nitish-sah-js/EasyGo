@@ -21,6 +21,8 @@ import { MapVisualization } from "@/components/map-visualization";
 import { RouteCard } from "@/components/route-card";
 import { AuthGuard } from "@/components/auth-guard";
 import { PageHero } from "@/components/page-hero";
+import { Reveal } from "@/components/motion/reveal";
+import { StaggerGroup, StaggerItem } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
@@ -88,60 +90,75 @@ export default function TripResultPage() {
   return (
     <AuthGuard>
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <PageHero
-          eyebrow={<Chip tone="onInk">{statusLabel(data.trip.status)}</Chip>}
-          title={`${data.trip.origin} to ${data.trip.destination}`}
-          meta={`${formatDate(data.trip.departureDate)} – ${formatDate(data.trip.returnDate)} · ${
-            data.trip.travelers
-          } ${data.trip.travelers === 1 ? "traveler" : "travelers"} · ${formatInr(data.trip.budget)} budget`}
-          action={
-            <>
-              <Link href={`/trips/${params.id}/planning`}>
-                <Button variant="onInk" shape="pill">
-                  Planning log
-                </Button>
-              </Link>
-              <Link href="/plan">
-                <Button variant="onInkSolid" shape="pill">
-                  <Plus />
-                  Plan another
-                </Button>
-              </Link>
-            </>
-          }
-        />
+        <Reveal onMount>
+          <PageHero
+            eyebrow={<Chip tone="onInk">{statusLabel(data.trip.status)}</Chip>}
+            title={`${data.trip.origin} to ${data.trip.destination}`}
+            meta={`${formatDate(data.trip.departureDate)} – ${formatDate(data.trip.returnDate)} · ${
+              data.trip.travelers
+            } ${data.trip.travelers === 1 ? "traveler" : "travelers"} · ${formatInr(data.trip.budget)} budget`}
+            action={
+              <>
+                <Link href={`/trips/${params.id}/planning`}>
+                  <Button variant="onInk" shape="pill">
+                    Planning log
+                  </Button>
+                </Link>
+                <Link href="/plan">
+                  <Button variant="onInkSolid" shape="pill">
+                    <Plus />
+                    Plan another
+                  </Button>
+                </Link>
+              </>
+            }
+          />
+        </Reveal>
 
-        <div className="mt-4 grid gap-3 rounded-2xl border border-border bg-surface p-5 shadow-card sm:grid-cols-2 lg:grid-cols-4">
-          <StatTile
-            tone="soft"
-            icon={<CalendarDays className="h-5 w-5" />}
-            label="Dates"
-            value={`${formatDate(data.trip.departureDate)} – ${formatDate(data.trip.returnDate)}`}
-            {...(nights > 0 ? { hint: `${nights} days forecast` } : {})}
-          />
-          <StatTile
-            tone="base"
-            icon={<Users className="h-5 w-5" />}
-            label="Travelers"
-            value={`${data.trip.travelers} ${data.trip.travelers === 1 ? "adult" : "adults"}`}
-            hint={data.trip.preferences.travelStyle.replace("_", " ").toLowerCase() + " style"}
-          />
-          <StatTile
-            tone="deep"
-            icon={<MapPinned className="h-5 w-5" />}
-            label="Interests"
-            value={data.trip.preferences.interests.slice(0, 3).join(", ") || "Not set"}
-          />
-          <StatTile
-            tone="mid"
-            icon={<Wallet className="h-5 w-5" />}
-            label="Budget"
-            value={formatInr(data.trip.budget)}
-            {...(data.budget
-              ? { hint: `${Math.round(data.budget.budgetPercentageUsed)}% planned` }
-              : {})}
-          />
-        </div>
+        <StaggerGroup
+          onMount
+          delayChildren={0.15}
+          stagger={0.07}
+          className="mt-4 grid gap-3 rounded-2xl border border-border bg-surface p-5 shadow-card sm:grid-cols-2 lg:grid-cols-4"
+        >
+          <StaggerItem size="sm">
+            <StatTile
+              tone="soft"
+              icon={<CalendarDays className="h-5 w-5" />}
+              label="Dates"
+              value={`${formatDate(data.trip.departureDate)} – ${formatDate(data.trip.returnDate)}`}
+              {...(nights > 0 ? { hint: `${nights} days forecast` } : {})}
+            />
+          </StaggerItem>
+          <StaggerItem size="sm">
+            <StatTile
+              tone="base"
+              icon={<Users className="h-5 w-5" />}
+              label="Travelers"
+              value={`${data.trip.travelers} ${data.trip.travelers === 1 ? "adult" : "adults"}`}
+              hint={data.trip.preferences.travelStyle.replace("_", " ").toLowerCase() + " style"}
+            />
+          </StaggerItem>
+          <StaggerItem size="sm">
+            <StatTile
+              tone="deep"
+              icon={<MapPinned className="h-5 w-5" />}
+              label="Interests"
+              value={data.trip.preferences.interests.slice(0, 3).join(", ") || "Not set"}
+            />
+          </StaggerItem>
+          <StaggerItem size="sm">
+            <StatTile
+              tone="mid"
+              icon={<Wallet className="h-5 w-5" />}
+              label="Budget"
+              value={formatInr(data.trip.budget)}
+              {...(data.budget
+                ? { hint: `${Math.round(data.budget.budgetPercentageUsed)}% planned` }
+                : {})}
+            />
+          </StaggerItem>
+        </StaggerGroup>
 
         {data.providerMessages.length ? (
           <div className="mt-4 rounded-2xl border border-brand-200 bg-brand-100 p-4 text-sm text-brand-900">
@@ -160,14 +177,20 @@ export default function TripResultPage() {
         <div className="mt-8 grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
           <div className="space-y-10">
             <section>
-              <SectionHeading title="Getting there" subtitle="Compared across flights, trains and buses." />
+              <Reveal>
+                <SectionHeading title="Getting there" subtitle="Compared across flights, trains and buses." />
+              </Reveal>
               {data.recommendedRoute ? (
-                <div className="space-y-4">
-                  <RouteCard route={data.recommendedRoute} recommended />
+                <StaggerGroup stagger={0.1} className="space-y-4">
+                  <StaggerItem>
+                    <RouteCard route={data.recommendedRoute} recommended />
+                  </StaggerItem>
                   {data.alternativeRoutes.map((route) => (
-                    <RouteCard key={route.id} route={route} />
+                    <StaggerItem key={route.id}>
+                      <RouteCard route={route} />
+                    </StaggerItem>
                   ))}
-                </div>
+                </StaggerGroup>
               ) : (
                 <EmptyState>
                   No route was found for this trip. The planning may have partially failed — try
@@ -177,18 +200,22 @@ export default function TripResultPage() {
             </section>
 
             <section>
-              <SectionHeading
-                title="Day-by-day itinerary"
-                subtitle={data.itinerary?.recommendation ?? "Chronological view of your plan."}
-              />
+              <Reveal>
+                <SectionHeading
+                  title="Day-by-day itinerary"
+                  subtitle={data.itinerary?.recommendation ?? "Chronological view of your plan."}
+                />
+              </Reveal>
               {data.itinerary ? (
                 <div className="space-y-6">
                   {data.itinerary.reason ? (
-                    <Card className="border-brand-200 bg-brand-50">
-                      <CardContent className="pt-6 text-sm leading-6 text-brand-800">
-                        {data.itinerary.reason}
-                      </CardContent>
-                    </Card>
+                    <Reveal>
+                      <Card className="border-brand-200 bg-brand-50">
+                        <CardContent className="pt-6 text-sm leading-6 text-brand-800">
+                          {data.itinerary.reason}
+                        </CardContent>
+                      </Card>
+                    </Reveal>
                   ) : null}
                   <ItineraryTimeline
                     itinerary={data.itinerary}
@@ -204,10 +231,10 @@ export default function TripResultPage() {
           </div>
 
           <aside className="space-y-8">
-            <section>
+            <Reveal as="section">
               <SectionHeading title="Where you'll stay" className="mb-4" />
               {data.hotel ? (
-                <Card className="overflow-hidden">
+                <Card className="group overflow-hidden">
                   <PlaceImage
                     src={firstPhotoUrl(data.hotel, 800)}
                     alt={data.hotel.name}
@@ -266,25 +293,28 @@ export default function TripResultPage() {
               ) : (
                 <EmptyState>No hotels were found for this destination and date range.</EmptyState>
               )}
-            </section>
+            </Reveal>
 
             {data.budget ? (
-              <section>
+              <Reveal as="section">
                 <SectionHeading title="Budget" className="mb-4" />
                 <BudgetBreakdown budget={data.budget} />
-              </section>
+              </Reveal>
             ) : null}
 
-            <section>
+            <Reveal as="section">
               <SectionHeading title="Top attractions" className="mb-4" />
               {data.attractions.length === 0 ? (
                 <EmptyState>No attractions were found for this destination.</EmptyState>
               ) : (
-                <div className="space-y-2.5">
+                <StaggerGroup stagger={0.05} className="space-y-2.5">
                   {data.attractions.slice(0, 6).map((attraction) => (
-                    <div
+                    <StaggerItem
+                      as="div"
+                      size="sm"
                       key={attraction.id}
-                      className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-2.5 shadow-card transition hover:shadow-lift"
+                      whileHover={{ y: -2 }}
+                      className="group flex items-center gap-3 rounded-2xl border border-border bg-surface p-2.5 shadow-card transition-shadow hover:shadow-lift"
                     >
                       <PlaceImage
                         src={firstPhotoUrl(attraction, 200)}
@@ -310,22 +340,25 @@ export default function TripResultPage() {
                       <Chip tone={attraction.entryFee === 0 ? "success" : "neutral"} className="shrink-0">
                         {attraction.entryFee === 0 ? "Free" : formatInr(attraction.entryFee)}
                       </Chip>
-                    </div>
+                    </StaggerItem>
                   ))}
-                </div>
+                </StaggerGroup>
               )}
-            </section>
+            </Reveal>
 
-            <section>
+            <Reveal as="section">
               <SectionHeading title="Where to eat" className="mb-4" />
               {data.restaurants.length === 0 ? (
                 <EmptyState>No restaurants were found for this destination.</EmptyState>
               ) : (
-                <div className="space-y-2.5">
+                <StaggerGroup stagger={0.05} className="space-y-2.5">
                   {data.restaurants.slice(0, 5).map((restaurant) => (
-                    <div
+                    <StaggerItem
+                      as="div"
+                      size="sm"
                       key={restaurant.id}
-                      className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3 shadow-card"
+                      whileHover={{ y: -2 }}
+                      className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3 shadow-card transition-shadow hover:shadow-lift"
                     >
                       <IconTile tone="base">
                         <Utensils className="h-5 w-5" />
@@ -339,13 +372,13 @@ export default function TripResultPage() {
                       <span className="shrink-0 text-sm font-bold text-foreground">
                         {formatInr(restaurant.mealCostPerPerson)}
                       </span>
-                    </div>
+                    </StaggerItem>
                   ))}
-                </div>
+                </StaggerGroup>
               )}
-            </section>
+            </Reveal>
 
-            <section>
+            <Reveal as="section">
               <SectionHeading title="Forecast" className="mb-4" />
               {data.weather.length === 0 ? (
                 <EmptyState>
@@ -368,9 +401,9 @@ export default function TripResultPage() {
                   </CardContent>
                 </Card>
               )}
-            </section>
+            </Reveal>
 
-            <section>
+            <Reveal as="section">
               <SectionHeading title="On the map" className="mb-4" />
               <MapVisualization
                 trip={data.trip}
@@ -378,7 +411,7 @@ export default function TripResultPage() {
                 attractions={data.attractions}
                 restaurants={data.restaurants}
               />
-            </section>
+            </Reveal>
           </aside>
         </div>
       </section>

@@ -22,24 +22,17 @@ export interface RevealProps extends Omit<HTMLMotionProps<"div">, "variants" | "
  * across the site — compose with `StaggerGroup` for card grids.
  */
 export function Reveal({ variants = fadeUp, delay = 0, onMount = false, as = "div", className, children, ...props }: RevealProps) {
-  const MotionTag = motion[as];
-  const withDelay = delay
-    ? {
-        hidden: variants.hidden,
-        visible: {
-          ...variants.visible,
-          transition: {
-            ...(typeof variants.visible === "object" && "transition" in variants.visible ? variants.visible.transition : {}),
-            delay,
-          },
-        },
-      }
-    : variants;
+  // Framer merges a variant's own `transition` over this default rather than
+  // replacing it, so `delay` (absent from the variant) survives while
+  // `duration`/`ease` (present on the variant) still win — no need to clone
+  // the variant object just to inject a delay.
+  const MotionTag = motion[as] as React.ElementType;
 
   return (
     <MotionTag
       className={className}
-      variants={withDelay}
+      variants={variants}
+      transition={{ delay }}
       initial="hidden"
       {...(onMount ? { animate: "visible" } : { whileInView: "visible", viewport: revealViewport })}
       {...props}

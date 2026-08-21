@@ -84,7 +84,7 @@ export function RouteCard({ route, recommended = false }: { route: RouteOption; 
       )}
     >
       {recommended ? (
-        <div className="flex items-center gap-2 bg-gradient-to-r from-brand-700 to-brand-700 px-5 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white">
+        <div className="flex items-center gap-2 bg-vibrant-purple px-5 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white">
           <Sparkles className="h-3.5 w-3.5" />
           Recommended route
         </div>

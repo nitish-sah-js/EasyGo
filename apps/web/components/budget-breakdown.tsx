@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "framer-motion";
 import {
   Bus,
   Camera,
@@ -8,6 +11,8 @@ import {
   Wallet,
 } from "lucide-react";
 import { formatInr, type BudgetBreakdown as BudgetBreakdownType } from "@nexttour/shared";
+import { AnimatedCounter } from "@/components/motion/animated-counter";
+import { StaggerGroup, StaggerItem } from "@/components/motion/stagger";
 import { IconTile, type IconTone } from "@/components/ui/icon-tile";
 
 const rows: Array<{
@@ -37,7 +42,7 @@ export function BudgetBreakdown({ budget }: { budget: BudgetBreakdownType }) {
               Estimated total
             </div>
             <div className="mt-1 text-3xl font-bold tracking-tight text-white">
-              {formatInr(budget.totalEstimatedCost)}
+              <AnimatedCounter value={budget.totalEstimatedCost} format={formatInr} />
             </div>
           </div>
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 text-white ring-1 ring-inset ring-white/20">
@@ -46,13 +51,15 @@ export function BudgetBreakdown({ budget }: { budget: BudgetBreakdownType }) {
         </div>
 
         <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/20">
-          <div
+          <motion.div
             className={
               overBudget
                 ? "h-full rounded-full bg-gradient-to-r from-blush-300 to-blush-400"
                 : "h-full rounded-full bg-gradient-to-r from-brand-300 to-brand-100"
             }
-            style={{ width: `${used}%` }}
+            initial={{ width: 0 }}
+            animate={{ width: `${used}%` }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           />
         </div>
         <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
@@ -61,18 +68,19 @@ export function BudgetBreakdown({ budget }: { budget: BudgetBreakdownType }) {
           </span>
           <span className={overBudget ? "font-semibold text-blush-200" : "font-semibold text-brand-200"}>
             {overBudget ? "Over by " : "Remaining "}
-            {formatInr(Math.abs(budget.remainingBudget))}
+            <AnimatedCounter value={Math.abs(budget.remainingBudget)} format={formatInr} />
           </span>
         </div>
       </div>
 
-      <div className="space-y-2">
+      <StaggerGroup stagger={0.06} className="space-y-2">
         {rows.map((row) => {
           const Icon = row.icon;
           const amount = Number(budget[row.key]);
           const share = budget.totalEstimatedCost > 0 ? (amount / budget.totalEstimatedCost) * 100 : 0;
           return (
-            <div
+            <StaggerItem
+              size="sm"
               key={row.key}
               className="flex items-center gap-3 rounded-xl border border-border bg-surface p-3"
             >
@@ -87,16 +95,19 @@ export function BudgetBreakdown({ budget }: { budget: BudgetBreakdownType }) {
                   </span>
                 </div>
                 <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-brand-100">
-                  <div
+                  <motion.div
                     className="h-full rounded-full bg-brand-300"
-                    style={{ width: `${Math.min(100, share)}%` }}
+                    initial={{ width: 0 }}
+                    whileInView={{ width: `${Math.min(100, share)}%` }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                   />
                 </div>
               </div>
-            </div>
+            </StaggerItem>
           );
         })}
-      </div>
+      </StaggerGroup>
     </div>
   );
 }
