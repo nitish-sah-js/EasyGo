@@ -17,7 +17,8 @@ import { AuthGuard } from "@/components/auth-guard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
-import { Scenic } from "@/components/ui/scenic";
+import { PlaceImage } from "@/components/ui/place-image";
+import { cityPhotoUrl } from "@/lib/place-images";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { apiFetch } from "@/lib/api";
 import { formatDate, statusLabel } from "@/lib/utils";
@@ -86,7 +87,13 @@ export default function TripsPage() {
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {data?.trips.map((trip) => (
             <Card key={trip.id} className="group overflow-hidden transition hover:shadow-lift">
-              <Scenic seed={trip.destination} scrim className="h-36">
+              <PlaceImage
+                src={cityPhotoUrl(trip.destination, 400)}
+                alt={trip.destination}
+                seed={trip.destination}
+                scrim
+                className="h-36"
+              >
                 <div className="flex h-full flex-col justify-between p-4">
                   <Chip tone="onInk" className="self-start">
                     {statusLabel(trip.status)}
@@ -98,7 +105,7 @@ export default function TripsPage() {
                     </h3>
                   </div>
                 </div>
-              </Scenic>
+              </PlaceImage>
 
               <CardContent className="space-y-4 pt-5">
                 <dl className="grid grid-cols-3 gap-3 text-xs">

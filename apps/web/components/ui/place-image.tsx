@@ -54,10 +54,17 @@ export function PlaceImage({
 
   const showPhoto = Boolean(src) && !failed;
   if (!showPhoto && fallback === "none") return null;
+  const isLoadingPhoto = showPhoto && !loaded;
 
   return (
     <div className={cn("relative isolate overflow-hidden", className)}>
       {fallback === "scene" ? <Scenic seed={seed} className="absolute inset-0 h-full w-full" /> : null}
+      {/* A shimmer over the scene while the photo is in flight — distinguishes
+          "still loading" from "this is the picture", so a slow connection doesn't
+          read as the abstract horizon being the final image. */}
+      {isLoadingPhoto ? (
+        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-white/0 via-white/25 to-white/0" />
+      ) : null}
       {showPhoto ? (
         // The API redirects to Google's photo CDN, whose host next/image cannot be
         // given as a remote pattern ahead of time.

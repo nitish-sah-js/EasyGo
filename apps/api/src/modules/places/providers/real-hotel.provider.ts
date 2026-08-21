@@ -2,7 +2,7 @@ import { haversineDistanceKm, type Coordinates, type Hotel, type TripPlanningReq
 import { env } from "../../../config/env";
 import { GooglePlacesClient } from "../../../lib/external/google-places-client";
 import { isPlaceUsable, toHotel as toGooglePlacesHotel } from "../../../lib/external/google-places-mapper";
-import { geocodeHotel, resolveCityCenter, searchNearbyPlaces } from "../../../lib/external/google-places-search";
+import { lookupPlaceByName, resolveCityCenter, searchNearbyPlaces } from "../../../lib/external/google-places-search";
 import { toHotels as toRedbusHotels } from "../../../lib/external/redbus-hotel-mapper";
 import { RedbusHotelsScraper } from "../../../lib/external/redbus-hotels-scraper";
 import { withTimeout } from "../../../lib/with-timeout";
@@ -72,17 +72,22 @@ export class RealHotelProvider implements HotelProvider {
     // Geocoding runs *after* ranking so the hotel the UI actually shows — and the one
     // used for hotel↔attraction distances — always has real coordinates. Each lookup
     // costs one Places `searchText` call against a per-day project quota, so the
-    // number is deliberately small and tunable.
+    // number is deliberately small and tunable. The same call also carries back a
+    // photo where redBus (the usual source for these hotels) has none.
     const head = hotels.slice(0, env.HOTEL_GEOCODE_LIMIT);
     const located = await Promise.all(
       head.map(async (hotel) => {
-        const coordinates = await geocodeHotel(this.placesClient, hotel.name, city, hotel.location);
-        if (!coordinates) return hotel;
+        const lookup = await lookupPlaceByName(this.placesClient, hotel.name, city, hotel.location);
         return {
           ...hotel,
-          latitude: coordinates.latitude,
-          longitude: coordinates.longitude,
-          distanceFromCenterKm: haversineDistanceKm(cityCenter, coordinates),
+          ...(lookup.coordinates
+            ? {
+                latitude: lookup.coordinates.latitude,
+                longitude: lookup.coordinates.longitude,
+                distanceFromCenterKm: haversineDistanceKm(cityCenter, lookup.coordinates),
+              }
+            : {}),
+          ...(lookup.photo && !hotel.photos?.length ? { photos: [lookup.photo] } : {}),
         };
       }),
     );
