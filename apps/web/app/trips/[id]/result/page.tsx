@@ -3,24 +3,39 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarDays, Hotel, Loader2, MapPinned, Users } from "lucide-react";
+import {
+  AlertTriangle,
+  CalendarDays,
+  Loader2,
+  MapPinned,
+  Plus,
+  Star,
+  Users,
+  Utensils,
+  Wallet,
+} from "lucide-react";
 import { formatInr } from "@nexttour/shared";
 import { BudgetBreakdown } from "@/components/budget-breakdown";
 import { ItineraryTimeline } from "@/components/itinerary-timeline";
 import { MapVisualization } from "@/components/map-visualization";
 import { RouteCard } from "@/components/route-card";
 import { AuthGuard } from "@/components/auth-guard";
-import { Badge } from "@/components/ui/badge";
+import { PageHero } from "@/components/page-hero";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { Chip } from "@/components/ui/chip";
+import { IconTile } from "@/components/ui/icon-tile";
+import { Scenic } from "@/components/ui/scenic";
+import { SectionHeading } from "@/components/ui/section-heading";
+import { StatTile } from "@/components/ui/stat-tile";
 import { formatDate, statusLabel } from "@/lib/utils";
 import { friendlyProviderMessage } from "@/lib/provider-messages";
 import { getTripResult } from "@/services/trips";
 
 function EmptyState({ children }: { children: React.ReactNode }) {
   return (
-    <Card>
-      <CardContent className="pt-5 text-sm text-slate-600">{children}</CardContent>
+    <Card className="border-dashed">
+      <CardContent className="pt-6 text-sm text-muted-foreground">{children}</CardContent>
     </Card>
   );
 }
@@ -35,10 +50,10 @@ export default function TripResultPage() {
   if (isLoading) {
     return (
       <AuthGuard>
-        <section className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-6xl items-center justify-center px-4 py-8">
-          <div className="flex items-center gap-3 text-sm text-slate-600">
-            <Loader2 className="h-5 w-5 animate-spin text-cyan-700" />
-            Loading result…
+        <section className="mx-auto flex min-h-[60vh] max-w-6xl items-center justify-center px-4 py-8">
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin text-lavender-500" />
+            Loading your trip…
           </div>
         </section>
       </AuthGuard>
@@ -48,12 +63,15 @@ export default function TripResultPage() {
   if (error || !data) {
     return (
       <AuthGuard>
-        <section className="mx-auto max-w-3xl px-4 py-8">
+        <section className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
           <Card>
-            <CardContent className="space-y-4 pt-5">
-              <p className="text-sm text-rose-600">{error?.message ?? "Result is not ready."}</p>
+            <CardContent className="space-y-4 pt-6">
+              <div className="flex items-center gap-2 text-blush-700">
+                <AlertTriangle className="h-5 w-5" />
+                <p className="text-sm font-semibold">{error?.message ?? "Result is not ready."}</p>
+              </div>
               <Link href={`/trips/${params.id}/planning`}>
-                <Button variant="secondary">Check planning</Button>
+                <Button variant="secondary">Check planning status</Button>
               </Link>
             </CardContent>
           </Card>
@@ -62,21 +80,81 @@ export default function TripResultPage() {
     );
   }
 
+  const nights = data.weather.length;
+
   return (
     <AuthGuard>
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <Badge>{statusLabel(data.trip.status)}</Badge>
-            <h1 className="mt-3 text-3xl font-bold tracking-normal">
-              {data.trip.origin} to {data.trip.destination}
-            </h1>
-          </div>
-          <Link href="/plan">
-            <Button variant="secondary">Plan another trip</Button>
-          </Link>
+        <PageHero
+          eyebrow={<Chip tone="onInk">{statusLabel(data.trip.status)}</Chip>}
+          title={`${data.trip.origin} to ${data.trip.destination}`}
+          meta={`${formatDate(data.trip.departureDate)} – ${formatDate(data.trip.returnDate)} · ${
+            data.trip.travelers
+          } ${data.trip.travelers === 1 ? "traveler" : "travelers"} · ${formatInr(data.trip.budget)} budget`}
+          action={
+            <>
+              <Link href={`/trips/${params.id}/planning`}>
+                <Button variant="onInk" shape="pill">
+                  Planning log
+                </Button>
+              </Link>
+              <Link href="/plan">
+                <Button variant="onInk" shape="pill">
+                  <Plus className="h-4 w-4" />
+                  Plan another
+                </Button>
+              </Link>
+            </>
+          }
+        />
+
+        <div className="mt-4 grid gap-3 rounded-2xl border border-border bg-surface p-5 shadow-card sm:grid-cols-2 lg:grid-cols-4">
+          <StatTile
+            tone="periwinkle"
+            icon={<CalendarDays className="h-5 w-5" />}
+            label="Dates"
+            value={`${formatDate(data.trip.departureDate)} – ${formatDate(data.trip.returnDate)}`}
+            {...(nights > 0 ? { hint: `${nights} days forecast` } : {})}
+          />
+          <StatTile
+            tone="lavender"
+            icon={<Users className="h-5 w-5" />}
+            label="Travelers"
+            value={`${data.trip.travelers} ${data.trip.travelers === 1 ? "adult" : "adults"}`}
+            hint={data.trip.preferences.travelStyle.replace("_", " ").toLowerCase() + " style"}
+          />
+          <StatTile
+            tone="orchid"
+            icon={<MapPinned className="h-5 w-5" />}
+            label="Interests"
+            value={data.trip.preferences.interests.slice(0, 3).join(", ") || "Not set"}
+          />
+          <StatTile
+            tone="mint"
+            icon={<Wallet className="h-5 w-5" />}
+            label="Budget"
+            value={formatInr(data.trip.budget)}
+            {...(data.budget
+              ? { hint: `${Math.round(data.budget.budgetPercentageUsed)}% planned` }
+              : {})}
+          />
         </div>
 
+        {data.providerMessages.length ? (
+          <div className="mt-4 rounded-2xl border border-peach-200 bg-peach-100 p-4 text-sm text-peach-900">
+            <div className="flex items-center gap-2 font-semibold">
+              <AlertTriangle className="h-4 w-4" />
+              This plan is partial
+            </div>
+            <ul className="mt-2 list-inside list-disc space-y-1 text-peach-900/90">
+              {data.providerMessages.map((message) => (
+                <li key={message}>{message}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+<<<<<<< Updated upstream
         <div className="mb-6 grid gap-3 md:grid-cols-4">
           <Card>
             <CardContent className="flex items-center gap-3 pt-5">
@@ -120,180 +198,217 @@ export default function TripResultPage() {
             <section className="space-y-3">
               <h2 className="text-xl font-semibold">Recommended Route</h2>
               <RouteCard route={data.recommendedRoute} recommended />
+=======
+        <div className="mt-8 grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+          <div className="space-y-10">
+            <section>
+              <SectionHeading title="Getting there" subtitle="Compared across flights, trains and buses." />
+              {data.recommendedRoute ? (
+                <div className="space-y-4">
+                  <RouteCard route={data.recommendedRoute} recommended />
+                  {data.alternativeRoutes.map((route) => (
+                    <RouteCard key={route.id} route={route} />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState>
+                  No route was found for this trip. The planning may have partially failed — try
+                  planning again.
+                </EmptyState>
+              )}
+>>>>>>> Stashed changes
             </section>
-          ) : (
-            <section className="space-y-3">
-              <h2 className="text-xl font-semibold">Recommended Route</h2>
-              <Card>
-                <CardContent className="pt-5 text-sm text-slate-600">
-                  No route was found for this trip. The planning may have partially failed — try planning again.
-                </CardContent>
-              </Card>
-            </section>
-          )}
 
-          {data.alternativeRoutes.length ? (
-            <section className="space-y-3">
-              <h2 className="text-xl font-semibold">Alternative Routes</h2>
-              <div className="grid gap-4">
-                {data.alternativeRoutes.map((route) => (
-                  <RouteCard key={route.id} route={route} />
-                ))}
-              </div>
+            <section>
+              <SectionHeading
+                title="Day-by-day itinerary"
+                subtitle={data.itinerary?.recommendation ?? "Chronological view of your plan."}
+              />
+              {data.itinerary ? (
+                <div className="space-y-6">
+                  {data.itinerary.reason ? (
+                    <Card className="border-lavender-200 bg-lavender-50">
+                      <CardContent className="pt-6 text-sm leading-6 text-lavender-800">
+                        {data.itinerary.reason}
+                      </CardContent>
+                    </Card>
+                  ) : null}
+                  <ItineraryTimeline itinerary={data.itinerary} />
+                </div>
+              ) : (
+                <EmptyState>
+                  No itinerary was generated for this trip. Re-run planning to try again.
+                </EmptyState>
+              )}
             </section>
-          ) : null}
+          </div>
 
-          {data.itinerary ? (
-            <section className="space-y-3">
-              <h2 className="text-xl font-semibold">Day-wise Itinerary</h2>
-              <Card>
-                <CardContent className="pt-5">
-                  <div className="font-semibold">{data.itinerary.recommendation}</div>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{data.itinerary.reason}</p>
-                </CardContent>
-              </Card>
-              <ItineraryTimeline itinerary={data.itinerary} />
-            </section>
-          ) : (
-            <section className="space-y-3">
-              <h2 className="text-xl font-semibold">Day-wise Itinerary</h2>
-              <EmptyState>
-                No itinerary was generated for this trip. Re-run planning to try again.
-              </EmptyState>
-            </section>
-          )}
-        </div>
-
-        <aside className="space-y-6">
-          {data.hotel ? (
-            <section className="space-y-3">
-              <h2 className="text-xl font-semibold">Hotel Recommendation</h2>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Hotel className="h-5 w-5 text-cyan-700" />
-                    {data.hotel.name}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm text-slate-600">
-                  <div>
-                    {data.hotel.reviewCount > 0
-                      ? `${data.hotel.rating} rating · ${data.hotel.reviewCount} reviews`
-                      : "Not yet rated"}
-                  </div>
-                  <div>
-                    {formatInr(data.hotel.pricePerNight)}/night
-                    {data.hotel.distanceFromCenterKm > 0
-                      ? ` · ${data.hotel.distanceFromCenterKm} km from center`
-                      : null}
-                  </div>
-                  {data.hotel.priceSource === "ESTIMATE" ? (
-                    <div className="rounded-md bg-amber-50 px-2 py-1 text-xs text-amber-900">
-                      Estimated rate — no live quote was available for these dates.
+          <aside className="space-y-8">
+            <section>
+              <SectionHeading title="Where you'll stay" className="mb-4" />
+              {data.hotel ? (
+                <Card className="overflow-hidden">
+                  <Scenic seed={data.hotel.name} scrim className="h-40">
+                    <div className="flex h-full items-end justify-between gap-3 p-4">
+                      <h3 className="text-lg font-bold leading-tight tracking-tight text-white">
+                        {data.hotel.name}
+                      </h3>
+                      {data.hotel.reviewCount > 0 ? (
+                        <Chip tone="onInk" className="shrink-0">
+                          <Star className="h-3.5 w-3.5" />
+                          {data.hotel.rating}
+                        </Chip>
+                      ) : null}
                     </div>
-                  ) : (
-                    <div className="text-xs text-emerald-700">Live rate for your dates</div>
-                  )}
-                  <div className="flex flex-wrap gap-2">
-                    {data.hotel.amenities.map((amenity) => (
-                      <Badge key={amenity}>{amenity}</Badge>
+                  </Scenic>
+                  <CardContent className="space-y-4 pt-5">
+                    <div className="flex items-end justify-between gap-3">
+                      <div>
+                        <div className="text-2xl font-bold tracking-tight text-foreground">
+                          {formatInr(data.hotel.pricePerNight)}
+                          <span className="text-sm font-medium text-muted-foreground">/night</span>
+                        </div>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {data.hotel.reviewCount > 0
+                            ? `${data.hotel.reviewCount} reviews`
+                            : "Not yet rated"}
+                          {data.hotel.distanceFromCenterKm > 0
+                            ? ` · ${data.hotel.distanceFromCenterKm} km from center`
+                            : ""}
+                        </p>
+                      </div>
+                      <Chip tone={data.hotel.priceSource === "LIVE" ? "mint" : "peach"}>
+                        {data.hotel.priceSource === "LIVE" ? "Live rate" : "Estimated"}
+                      </Chip>
+                    </div>
+                    {data.hotel.priceSource === "ESTIMATE" ? (
+                      <p className="rounded-xl bg-peach-100 px-3 py-2 text-xs text-peach-900">
+                        No live quote was available for these dates — this rate comes from the
+                        property&apos;s price tier.
+                      </p>
+                    ) : null}
+                    <div className="flex flex-wrap gap-1.5">
+                      {data.hotel.amenities.slice(0, 8).map((amenity) => (
+                        <Chip key={amenity} tone="neutral" className="text-[0.7rem]">
+                          {amenity}
+                        </Chip>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <EmptyState>No hotels were found for this destination and date range.</EmptyState>
+              )}
+            </section>
+
+            {data.budget ? (
+              <section>
+                <SectionHeading title="Budget" className="mb-4" />
+                <BudgetBreakdown budget={data.budget} />
+              </section>
+            ) : null}
+
+            <section>
+              <SectionHeading title="Top attractions" className="mb-4" />
+              {data.attractions.length === 0 ? (
+                <EmptyState>No attractions were found for this destination.</EmptyState>
+              ) : (
+                <div className="space-y-2.5">
+                  {data.attractions.slice(0, 6).map((attraction) => (
+                    <div
+                      key={attraction.id}
+                      className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-2.5 shadow-card transition hover:shadow-lift"
+                    >
+                      <Scenic seed={attraction.name} className="h-16 w-16 shrink-0 rounded-xl" />
+                      <div className="min-w-0 flex-1">
+                        <h4 className="truncate text-sm font-bold text-foreground">
+                          {attraction.name}
+                        </h4>
+                        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+                          {attraction.rating > 0 ? (
+                            <span className="inline-flex items-center gap-1 font-semibold text-lavender-700">
+                              <Star className="h-3 w-3" />
+                              {attraction.rating}
+                            </span>
+                          ) : null}
+                          <span className="capitalize">{attraction.category.toLowerCase()}</span>
+                        </div>
+                      </div>
+                      <Chip tone={attraction.entryFee === 0 ? "mint" : "neutral"} className="shrink-0">
+                        {attraction.entryFee === 0 ? "Free" : formatInr(attraction.entryFee)}
+                      </Chip>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section>
+              <SectionHeading title="Where to eat" className="mb-4" />
+              {data.restaurants.length === 0 ? (
+                <EmptyState>No restaurants were found for this destination.</EmptyState>
+              ) : (
+                <div className="space-y-2.5">
+                  {data.restaurants.slice(0, 5).map((restaurant) => (
+                    <div
+                      key={restaurant.id}
+                      className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3 shadow-card"
+                    >
+                      <IconTile tone="peach">
+                        <Utensils className="h-5 w-5" />
+                      </IconTile>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="truncate text-sm font-bold text-foreground">
+                          {restaurant.name}
+                        </h4>
+                        <p className="truncate text-xs text-muted-foreground">{restaurant.cuisine}</p>
+                      </div>
+                      <span className="shrink-0 text-sm font-bold text-foreground">
+                        {formatInr(restaurant.mealCostPerPerson)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section>
+              <SectionHeading title="Forecast" className="mb-4" />
+              {data.weather.length === 0 ? (
+                <EmptyState>
+                  No forecast is available for these dates — they fall outside the 16-day window.
+                </EmptyState>
+              ) : (
+                <Card>
+                  <CardContent className="grid gap-1.5 pt-6">
+                    {data.weather.map((weather) => (
+                      <div
+                        key={weather.id}
+                        className="flex items-center justify-between rounded-xl bg-sky-50 px-3 py-2.5 text-sm"
+                      >
+                        <span className="text-muted-foreground">{weather.date}</span>
+                        <span className="font-semibold capitalize text-foreground">
+                          {weather.temperature}°C · {weather.condition.replace("_", " ").toLowerCase()}
+                        </span>
+                      </div>
                     ))}
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
             </section>
-          ) : (
-            <section className="space-y-3">
-              <h2 className="text-xl font-semibold">Hotel Recommendation</h2>
-              <EmptyState>No hotels were found for this destination and date range.</EmptyState>
+
+            <section>
+              <SectionHeading title="On the map" className="mb-4" />
+              <MapVisualization
+                trip={data.trip}
+                {...(data.hotel ? { hotel: data.hotel } : {})}
+                attractions={data.attractions}
+                restaurants={data.restaurants}
+              />
             </section>
-          )}
-
-          {data.budget ? (
-            <section className="space-y-3">
-              <h2 className="text-xl font-semibold">Budget Breakdown</h2>
-              <Card>
-                <CardContent className="pt-5">
-                  <BudgetBreakdown budget={data.budget} />
-                </CardContent>
-              </Card>
-            </section>
-          ) : null}
-
-          <section className="space-y-3">
-            <h2 className="text-xl font-semibold">Tourist Attractions</h2>
-            {data.attractions.length === 0 ? (
-              <EmptyState>No attractions were found for this destination.</EmptyState>
-            ) : (
-            <Card>
-              <CardContent className="space-y-3 pt-5">
-                {data.attractions.slice(0, 6).map((attraction) => (
-                  <div key={attraction.id} className="flex items-start justify-between gap-3 border-b border-border pb-3 last:border-0 last:pb-0">
-                    <div>
-                      <div className="font-medium">{attraction.name}</div>
-                      <div className="text-sm text-slate-600">{attraction.category} · {attraction.bestTimeToVisit}</div>
-                    </div>
-                    <div className="text-sm font-semibold">{formatInr(attraction.entryFee)}</div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-            )}
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="text-xl font-semibold">Restaurants</h2>
-            {data.restaurants.length === 0 ? (
-              <EmptyState>No restaurants were found for this destination.</EmptyState>
-            ) : (
-            <Card>
-              <CardContent className="space-y-3 pt-5">
-                {data.restaurants.slice(0, 5).map((restaurant) => (
-                  <div key={restaurant.id} className="flex items-start justify-between gap-3 border-b border-border pb-3 last:border-0 last:pb-0">
-                    <div>
-                      <div className="font-medium">{restaurant.name}</div>
-                      <div className="text-sm text-slate-600">{restaurant.cuisine}</div>
-                    </div>
-                    <div className="text-sm font-semibold">{formatInr(restaurant.mealCostPerPerson)}</div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-            )}
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="text-xl font-semibold">Weather</h2>
-            {data.weather.length === 0 ? (
-              <EmptyState>
-                No forecast is available for these dates — they fall outside the 16-day forecast window.
-              </EmptyState>
-            ) : (
-            <Card>
-              <CardContent className="grid gap-2 pt-5">
-                {data.weather.map((weather) => (
-                  <div key={weather.id} className="flex items-center justify-between rounded-md bg-slate-50 p-3 text-sm">
-                    <span>{weather.date}</span>
-                    <span>{weather.temperature}°C · {weather.condition.replace("_", " ")}</span>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-            )}
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="text-xl font-semibold">Map</h2>
-            <MapVisualization
-              trip={data.trip}
-              {...(data.hotel ? { hotel: data.hotel } : {})}
-              attractions={data.attractions}
-              restaurants={data.restaurants}
-            />
-          </section>
-        </aside>
-      </div>
-    </section>
+          </aside>
+        </div>
+      </section>
     </AuthGuard>
   );
 }

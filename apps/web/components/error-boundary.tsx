@@ -1,6 +1,7 @@
 "use client";
 
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { AlertTriangle } from "lucide-react";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -26,10 +27,13 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       return this.props.children;
     }
     return (
-      <section className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-xl flex-col items-start justify-center gap-4 px-4 py-8">
-        <div className="rounded-lg border border-rose-200 bg-rose-50 p-5">
-          <h2 className="text-lg font-semibold text-rose-900">Something went wrong</h2>
-          <p className="mt-2 text-sm leading-6 text-rose-800">{this.state.error.message}</p>
+      <section className="mx-auto flex min-h-[60vh] max-w-xl flex-col items-start justify-center gap-5 px-4 py-8">
+        <div className="w-full rounded-2xl border border-blush-200 bg-blush-100 p-6 shadow-card">
+          <div className="flex items-center gap-2.5 text-blush-900">
+            <AlertTriangle className="h-5 w-5" />
+            <h2 className="text-lg font-bold tracking-tight">Something went wrong</h2>
+          </div>
+          <p className="mt-2.5 text-sm leading-6 text-blush-800">{this.state.error.message}</p>
         </div>
         <button
           type="button"
@@ -37,7 +41,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             this.setState({ error: null });
             window.location.href = "/";
           }}
-          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
+          className="rounded-xl bg-lavender-700 px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:bg-lavender-800"
         >
           Back to home
         </button>

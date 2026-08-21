@@ -7,9 +7,9 @@ import { LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { loginSchema, type LoginInput } from "@nexttour/shared";
+import { AuthLayout } from "@/components/auth-layout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Field, Input } from "@/components/ui/input";
 import { apiFetch } from "@/lib/api";
 
 export default function LoginPage() {
@@ -29,35 +29,35 @@ export default function LoginPage() {
   });
 
   return (
-    <section className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md items-center px-4 py-10">
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Login</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form className="space-y-4" onSubmit={form.handleSubmit((values) => mutation.mutate(values))}>
-            <label className="block space-y-2 text-sm font-medium">
-              <span>Email</span>
-              <Input type="email" {...form.register("email")} />
-            </label>
-            <label className="block space-y-2 text-sm font-medium">
-              <span>Password</span>
-              <Input type="password" {...form.register("password")} />
-            </label>
-            {mutation.error ? <p className="text-sm text-rose-600">{mutation.error.message}</p> : null}
-            <Button className="w-full" disabled={mutation.isPending}>
-              <LogIn className="h-4 w-4" />
-              Login
-            </Button>
-          </form>
-          <p className="mt-4 text-sm text-slate-600">
-            New here?{" "}
-            <Link href="/register" className="font-medium text-cyan-700">
-              Create an account
-            </Link>
+    <AuthLayout
+      title="Welcome back"
+      subtitle="Sign in to pick up planning where you left off."
+      footer={
+        <>
+          New here?{" "}
+          <Link href="/register" className="font-semibold text-lavender-600 hover:text-lavender-700">
+            Create an account
+          </Link>
+        </>
+      }
+    >
+      <form className="space-y-5" onSubmit={form.handleSubmit((values) => mutation.mutate(values))}>
+        <Field label="Email">
+          <Input type="email" autoComplete="email" {...form.register("email")} />
+        </Field>
+        <Field label="Password">
+          <Input type="password" autoComplete="current-password" {...form.register("password")} />
+        </Field>
+        {mutation.error ? (
+          <p className="rounded-xl border border-blush-200 bg-blush-100 px-4 py-3 text-sm text-blush-900">
+            {mutation.error.message}
           </p>
-        </CardContent>
-      </Card>
-    </section>
+        ) : null}
+        <Button size="lg" className="w-full" disabled={mutation.isPending}>
+          <LogIn className="h-4 w-4" />
+          {mutation.isPending ? "Signing in…" : "Sign in"}
+        </Button>
+      </form>
+    </AuthLayout>
   );
 }

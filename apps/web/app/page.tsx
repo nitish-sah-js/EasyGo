@@ -1,88 +1,146 @@
 import Link from "next/link";
-import { Bot, Bus, Hotel, MapPin, Plane, Train, Utensils } from "lucide-react";
+import { Bot, Bus, Compass, Hotel, MapPin, Plane, Route, Train, Utensils, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Chip } from "@/components/ui/chip";
+import { IconTile } from "@/components/ui/icon-tile";
+import { SectionHeading } from "@/components/ui/section-heading";
+import { DestinationGrid } from "@/components/destination-grid";
+import { HeroScene } from "@/components/hero-scene";
+import { SearchPanel } from "@/components/search-panel";
 
-const capabilityIcons = [
-  { label: "Flights", icon: Plane },
-  { label: "Trains", icon: Train },
-  { label: "Buses", icon: Bus },
-  { label: "Hotels", icon: Hotel },
-  { label: "Places", icon: MapPin },
-  { label: "Food", icon: Utensils },
-  { label: "AI", icon: Bot },
+const journeySteps = [
+  {
+    label: "Discover",
+    icon: Compass,
+    tone: "lavender" as const,
+    copy: "Pick a destination and tell us the style, food and interests you travel with.",
+  },
+  {
+    label: "Compare",
+    icon: Route,
+    tone: "periwinkle" as const,
+    copy: "Flights, trains and buses are searched together, including mixed-mode routes.",
+  },
+  {
+    label: "Stay",
+    icon: Hotel,
+    tone: "sky" as const,
+    copy: "Hotels are matched to your budget tier with live nightly rates where available.",
+  },
+  {
+    label: "Explore",
+    icon: MapPin,
+    tone: "mint" as const,
+    copy: "A day-by-day itinerary with places, meals, weather and a full cost breakdown.",
+  },
+];
+
+const coverage = [
+  { label: "Flights", icon: Plane, tone: "periwinkle" as const },
+  { label: "Trains", icon: Train, tone: "lavender" as const },
+  { label: "Buses", icon: Bus, tone: "orchid" as const },
+  { label: "Hotels", icon: Hotel, tone: "sky" as const },
+  { label: "Places", icon: MapPin, tone: "aqua" as const },
+  { label: "Food", icon: Utensils, tone: "peach" as const },
+  { label: "Budget", icon: Wallet, tone: "mint" as const },
+  { label: "AI itinerary", icon: Bot, tone: "blush" as const },
 ];
 
 export default function HomePage() {
   return (
-    <section className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-7xl items-center gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
-      <div className="space-y-8">
-        <Badge>Mock-data MVP</Badge>
-        <div className="max-w-2xl space-y-5">
-          <h1 className="text-4xl font-bold leading-tight tracking-normal text-slate-950 sm:text-6xl">
-            Plan Your Entire Trip in One Place
-          </h1>
-          <p className="text-lg leading-8 text-slate-650">
-            Compare routes, discover stays and places, and get a personalized itinerary.
-          </p>
+    <>
+      <section className="relative">
+        <div className="relative isolate overflow-hidden">
+          <HeroScene />
+          <div className="relative z-10 mx-auto max-w-7xl px-4 pb-40 pt-20 text-center sm:px-6 sm:pb-44 sm:pt-28 lg:px-8">
+            <Chip tone="onInk" className="mb-6">
+              Live provider data · No mock results
+            </Chip>
+            <h1 className="mx-auto max-w-4xl text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-6xl">
+              Plan Your Journey.
+              <br />
+              <span className="text-aqua-200">Discover More.</span>
+            </h1>
+            <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-lavender-100 sm:text-lg">
+              Orchestrate the entire trip in one place — compare every way to get there, find a
+              place to stay, and leave with a day-by-day itinerary that fits your budget.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <Link href="/plan">
+                <Button size="lg" variant="onInk" shape="pill">
+                  <Plane className="h-4 w-4" />
+                  Start planning
+                </Button>
+              </Link>
+              <Link href="/trips">
+                <Button size="lg" variant="onInk" shape="pill">
+                  View my trips
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Link href="/plan">
-            <Button className="w-full sm:w-auto">
-              <Plane className="h-4 w-4" />
-              Plan a Trip
-            </Button>
-          </Link>
-          <Link href="/trips">
-            <Button className="w-full sm:w-auto" variant="secondary">
-              View Trips
-            </Button>
-          </Link>
-        </div>
-      </div>
 
-      <div className="relative min-h-[520px] overflow-hidden rounded-lg border border-border bg-white shadow-panel">
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-50 via-white to-emerald-50/60" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(8,145,178,0.12),transparent_45%),radial-gradient(circle_at_80%_70%,rgba(5,150,105,0.12),transparent_45%)]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-white via-white/80 to-cyan-50/60" />
-        <div className="relative flex h-full min-h-[520px] flex-col justify-between p-6 sm:p-8">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {capabilityIcons.map((item) => {
-              const Icon = item.icon;
+        <div className="relative mx-auto -mt-28 max-w-6xl px-4 sm:-mt-32 sm:px-6 lg:px-8">
+          <SearchPanel />
+        </div>
+      </section>
+
+      <DestinationGrid />
+
+      <section className="border-y border-border bg-surface/60 py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionHeading
+            align="center"
+            title="Plan Your Entire Journey"
+            subtitle="One flow from the first idea to the return leg — nothing stitched together by hand."
+          />
+          <ol className="relative mt-10 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+            <li
+              aria-hidden
+              className="pointer-events-none absolute inset-x-[12%] top-7 hidden h-px bg-gradient-to-r from-lavender-200 via-aqua-200 to-mint-200 lg:block"
+            />
+            {journeySteps.map((step, index) => {
+              const Icon = step.icon;
               return (
-                <div key={item.label} className="rounded-lg border border-border bg-white/90 p-3 shadow-sm">
-                  <Icon className="mb-3 h-5 w-5 text-cyan-700" />
-                  <div className="text-sm font-semibold text-slate-900">{item.label}</div>
-                </div>
+                <li key={step.label} className="relative flex flex-col items-center text-center">
+                  <IconTile tone={step.tone} size="lg" className="rounded-full bg-surface shadow-card ring-1 ring-border">
+                    <Icon className="h-6 w-6" />
+                  </IconTile>
+                  <div className="mt-4 flex items-center gap-2">
+                    <span className="text-xs font-bold text-lavender-400">0{index + 1}</span>
+                    <h3 className="text-base font-bold tracking-tight text-foreground">{step.label}</h3>
+                  </div>
+                  <p className="mt-2 max-w-[16rem] text-sm leading-6 text-muted-foreground">{step.copy}</p>
+                </li>
               );
             })}
-          </div>
-
-          <div className="space-y-7">
-            <div className="flex items-center gap-3">
-              <div className="h-3 w-3 rounded-full bg-cyan-600" />
-              <div className="route-line h-0.5 flex-1" />
-              <div className="h-3 w-3 rounded-full bg-emerald-600" />
-              <div className="route-line h-0.5 flex-1" />
-              <div className="h-3 w-3 rounded-full bg-amber-500" />
-            </div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-lg border border-border bg-white p-4">
-                <div className="text-sm text-slate-500">Origin</div>
-                <div className="text-xl font-semibold">Patna</div>
-              </div>
-              <div className="rounded-lg border border-border bg-white p-4">
-                <div className="text-sm text-slate-500">Mixed route</div>
-                <div className="text-xl font-semibold">Train + Flight</div>
-              </div>
-              <div className="rounded-lg border border-border bg-white p-4">
-                <div className="text-sm text-slate-500">Destination</div>
-                <div className="text-xl font-semibold">Goa</div>
-              </div>
-            </div>
-          </div>
+          </ol>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <SectionHeading
+          title="Everything searched in one pass"
+          subtitle="Each planning run fans out across these providers and reports what came back."
+        />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {coverage.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={item.label}
+                className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 shadow-card transition hover:shadow-lift"
+              >
+                <IconTile tone={item.tone} size="sm">
+                  <Icon className="h-[1.1rem] w-[1.1rem]" />
+                </IconTile>
+                <span className="text-sm font-semibold text-foreground">{item.label}</span>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    </>
   );
 }

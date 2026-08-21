@@ -1,13 +1,32 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { LogOut, Map, PlaneTakeoff, Plus } from "lucide-react";
+import { Bell, Compass, LogOut, Route, Sparkles, Ticket } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { SiteFooter } from "@/components/site-footer";
+import { cn } from "@/lib/utils";
 import type { CurrentUserResponse } from "@/types/trips";
 
+const navLinks = [
+  { href: "/", label: "Explore", icon: Compass },
+  { href: "/plan", label: "Plan", icon: Sparkles },
+  { href: "/trips", label: "My Trips", icon: Ticket },
+];
+
+function initialsOf(name: string): string {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const queryClient = useQueryClient();
   const { data } = useQuery({
     queryKey: ["auth", "me"],
@@ -22,32 +41,69 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     },
   });
 
+  const user = data?.user;
+
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-40 border-b border-border bg-white/88 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-2 text-lg font-bold tracking-tight">
-            <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-white">
-              <Map className="h-5 w-5" />
+    <div className="flex min-h-screen flex-col">
+      <header className="sticky top-0 z-40 border-b border-border bg-surface/85 backdrop-blur-xl">
+        <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
+          <Link href="/" className="flex items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-lavender-500 to-periwinkle-600 text-white shadow-card">
+              <Route className="h-5 w-5" />
             </span>
-            NextTour
+            <span className="text-lg font-bold tracking-tight text-foreground">
+              Next<span className="text-lavender-600">Tour</span>
+            </span>
           </Link>
-          <nav className="flex items-center gap-2">
-            {data?.user ? (
-              <>
-                <Link href="/trips" className="hidden text-sm font-medium text-slate-700 hover:text-slate-950 sm:inline">
-                  Trips
+
+          <nav className="hidden items-center gap-1 md:flex">
+            {navLinks.map((link) => {
+              const active = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "relative px-4 py-2 text-sm font-semibold transition",
+                    active ? "text-lavender-700" : "text-muted-foreground hover:text-lavender-700",
+                  )}
+                >
+                  {link.label}
+                  {active ? (
+                    <span className="absolute inset-x-4 -bottom-0.5 h-0.5 rounded-full bg-lavender-600" />
+                  ) : null}
                 </Link>
-                <Link href="/plan">
-                  <Button size="sm">
-                    <Plus className="h-4 w-4" />
-                    Plan
+              );
+            })}
+          </nav>
+
+          <div className="flex items-center gap-2">
+            {user ? (
+              <>
+                <button
+                  type="button"
+                  aria-label="Notifications"
+                  className="hidden h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition hover:bg-lavender-100 hover:text-lavender-700 sm:flex"
+                >
+                  <Bell className="h-[1.15rem] w-[1.15rem]" />
+                </button>
+                <Link href="/plan" className="hidden sm:block">
+                  <Button size="sm" shape="pill">
+                    Plan a trip
                   </Button>
                 </Link>
+                <span
+                  title={user.name}
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-lavender-200 to-periwinkle-200 text-sm font-bold text-lavender-800 ring-2 ring-white"
+                >
+                  {initialsOf(user.name)}
+                </span>
                 <Button
                   aria-label="Log out"
                   size="icon"
                   variant="ghost"
+                  shape="pill"
                   onClick={() => logoutMutation.mutate()}
                 >
                   <LogOut className="h-4 w-4" />
@@ -56,22 +112,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             ) : (
               <>
                 <Link href="/login">
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" shape="pill">
                     Login
                   </Button>
                 </Link>
                 <Link href="/register">
-                  <Button size="sm">
-                    <PlaneTakeoff className="h-4 w-4" />
-                    Register
+                  <Button size="sm" shape="pill">
+                    Get started
                   </Button>
                 </Link>
               </>
             )}
-          </nav>
+          </div>
         </div>
       </header>
-      <main>{children}</main>
+
+      <main className="flex-1">{children}</main>
+      <SiteFooter />
     </div>
   );
 }

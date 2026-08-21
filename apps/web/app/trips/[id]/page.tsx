@@ -3,12 +3,25 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, MapPin, Play, Route, Users, Wallet } from "lucide-react";
+import {
+  AlertTriangle,
+  CalendarDays,
+  Hotel,
+  MapPin,
+  Play,
+  Salad,
+  Sparkles,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { formatInr } from "@nexttour/shared";
 import { AuthGuard } from "@/components/auth-guard";
-import { Badge } from "@/components/ui/badge";
+import { PageHero } from "@/components/page-hero";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { Chip } from "@/components/ui/chip";
+import { SectionHeading } from "@/components/ui/section-heading";
+import { StatTile } from "@/components/ui/stat-tile";
 import { apiFetch } from "@/lib/api";
 import { formatDate, statusLabel } from "@/lib/utils";
 import { startTripPlanning } from "@/services/trips";
@@ -32,60 +45,150 @@ export default function TripPage() {
 
   return (
     <AuthGuard>
-      <section className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        <Card>
-          <CardHeader>
-            <Badge>{statusLabel(trip?.status) ?? "Trip"}</Badge>
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <Route className="h-5 w-5 text-cyan-700" />
-              {trip ? `${trip.origin} to ${trip.destination}` : "Loading trip…"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {isLoading ? <p className="text-sm text-slate-600">Loading trip…</p> : null}
-            {error ? <p className="text-sm text-rose-600">{error.message}</p> : null}
+      <section className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+        <PageHero
+          eyebrow={<Chip tone="onInk">{statusLabel(trip?.status) ?? "Trip"}</Chip>}
+          title={trip ? `${trip.origin} to ${trip.destination}` : "Loading trip…"}
+          {...(trip
+            ? {
+                meta: `${formatDate(trip.departureDate)} – ${formatDate(trip.returnDate)} · ${
+                  trip.travelers
+                } ${trip.travelers === 1 ? "traveler" : "travelers"}`,
+              }
+            : {})}
+          action={
+            trip && (trip.status === "PENDING" || trip.status === "FAILED") ? (
+              <Button variant="onInk" shape="pill" onClick={() => mutation.mutate()} disabled={mutation.isPending}>
+                <Play className="h-4 w-4" />
+                {mutation.isPending ? "Starting…" : "Start planning"}
+              </Button>
+            ) : trip ? (
+              <Link href={`/trips/${params.id}/result`}>
+                <Button variant="onInk" shape="pill">
+                  <Sparkles className="h-4 w-4" />
+                  View plan
+                </Button>
+              </Link>
+            ) : null
+          }
+        />
 
-            {trip ? (
-              <>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="flex items-center gap-3 rounded-md border border-border bg-slate-50 p-4 text-sm">
-                    <CalendarDays className="h-5 w-5 text-cyan-700" />
-                    {formatDate(trip.departureDate)} to {formatDate(trip.returnDate)}
-                  </div>
-                  <div className="flex items-center gap-3 rounded-md border border-border bg-slate-50 p-4 text-sm">
-                    <Users className="h-5 w-5 text-cyan-700" />
-                    {trip.travelers} travelers
-                  </div>
-                  <div className="flex items-center gap-3 rounded-md border border-border bg-slate-50 p-4 text-sm">
-                    <Wallet className="h-5 w-5 text-cyan-700" />
-                    {formatInr(trip.budget)} budget
-                  </div>
-                  <div className="flex items-center gap-3 rounded-md border border-border bg-slate-50 p-4 text-sm">
-                    <MapPin className="h-5 w-5 text-cyan-700" />
-                    {trip.preferences.accommodationPreference.replace("_", " ")} stay ·{" "}
-                    {trip.preferences.foodPreference.replace("_", " ")} food
-                  </div>
-                </div>
+        {isLoading ? (
+          <p className="mt-6 text-sm text-muted-foreground">Loading trip…</p>
+        ) : null}
+        {error ? (
+          <p className="mt-6 flex items-center gap-2 rounded-2xl border border-blush-200 bg-blush-100 p-4 text-sm text-blush-900">
+            <AlertTriangle className="h-4 w-4" />
+            {error.message}
+          </p>
+        ) : null}
 
-                <div className="flex flex-wrap items-center gap-3">
-                  {trip.status === "PENDING" || trip.status === "FAILED" ? (
-                    <Button onClick={() => mutation.mutate()} disabled={mutation.isPending}>
-                      <Play className="h-4 w-4" />
-                      {mutation.isPending ? "Starting…" : "Start planning"}
-                    </Button>
-                  ) : null}
-                  <Link href={`/trips/${params.id}/planning`}>
-                    <Button variant="secondary">Planning</Button>
-                  </Link>
-                  <Link href={`/trips/${params.id}/result`}>
-                    <Button variant="secondary">Result</Button>
-                  </Link>
-                </div>
-              </>
-            ) : null}
-          </CardContent>
-        </Card>
+        {trip ? (
+          <>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <Card>
+                <CardContent className="pt-6">
+                  <StatTile
+                    tone="periwinkle"
+                    icon={<CalendarDays className="h-5 w-5" />}
+                    label="Dates"
+                    value={`${formatDate(trip.departureDate)} – ${formatDate(trip.returnDate)}`}
+                  />
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <StatTile
+                    tone="lavender"
+                    icon={<Users className="h-5 w-5" />}
+                    label="Travelers"
+                    value={`${trip.travelers} ${trip.travelers === 1 ? "traveler" : "travelers"}`}
+                  />
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <StatTile
+                    tone="mint"
+                    icon={<Wallet className="h-5 w-5" />}
+                    label="Budget"
+                    value={formatInr(trip.budget)}
+                    hint={`${trip.preferences.travelStyle.replace("_", " ").toLowerCase()} style`}
+                  />
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <StatTile
+                    tone="sky"
+                    icon={<Hotel className="h-5 w-5" />}
+                    label="Stay"
+                    value={trip.preferences.accommodationPreference.replace("_", " ").toLowerCase()}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="mt-8">
+              <SectionHeading title="Your preferences" className="mb-4" />
+              <Card>
+                <CardContent className="space-y-5 pt-6">
+                  <PreferenceRow
+                    icon={<MapPin className="h-4 w-4" />}
+                    label="Interests"
+                    values={trip.preferences.interests}
+                  />
+                  <PreferenceRow
+                    icon={<Play className="h-4 w-4" />}
+                    label="Transport"
+                    values={trip.preferences.preferredTransport}
+                  />
+                  <PreferenceRow
+                    icon={<Salad className="h-4 w-4" />}
+                    label="Food"
+                    values={[trip.preferences.foodPreference]}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <Link href={`/trips/${params.id}/planning`}>
+                <Button variant="secondary">Planning status</Button>
+              </Link>
+              <Link href={`/trips/${params.id}/result`}>
+                <Button variant="secondary">Full result</Button>
+              </Link>
+            </div>
+          </>
+        ) : null}
       </section>
     </AuthGuard>
+  );
+}
+
+function PreferenceRow({
+  icon,
+  label,
+  values,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  values: string[];
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+      <span className="flex min-w-[7.5rem] items-center gap-2 text-sm font-semibold text-muted-foreground">
+        <span className="text-lavender-500">{icon}</span>
+        {label}
+      </span>
+      <div className="flex flex-wrap gap-1.5">
+        {values.map((value) => (
+          <Chip key={value} tone="lavender">
+            {value.replace("_", " ").toLowerCase()}
+          </Chip>
+        ))}
+      </div>
+    </div>
   );
 }

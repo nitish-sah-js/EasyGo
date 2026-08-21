@@ -2,16 +2,30 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRight, Check } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Bus,
+  CalendarDays,
+  Check,
+  MapPin,
+  Plane,
+  Salad,
+  Train,
+  Users,
+  Wallet,
+} from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   ACCOMMODATION_PREFERENCES,
+  CITY_COORDINATES,
   FOOD_PREFERENCES,
   INTEREST_CATEGORIES,
   TRANSPORT_MODES,
   TRAVEL_STYLES,
+  addDays,
   tripPlanningSchema,
   type AccommodationPreference,
   type FoodPreference,
@@ -20,16 +34,24 @@ import {
   type TravelStyle,
   type TripPlanningInput,
 } from "@nexttour/shared";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import { AuthGuard } from "@/components/auth-guard";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Chip } from "@/components/ui/chip";
+import { IconTile } from "@/components/ui/icon-tile";
+import { Field, Input, Select } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { apiFetch } from "@/lib/api";
 import type { PlanTripResponse } from "@/types/trips";
 
-const steps = ["Route", "Dates", "Travelers", "Budget", "Preferences", "Review"] as const;
+const steps = [
+  { label: "Route", icon: MapPin },
+  { label: "Dates", icon: CalendarDays },
+  { label: "Travelers", icon: Users },
+  { label: "Budget", icon: Wallet },
+  { label: "Preferences", icon: Salad },
+  { label: "Review", icon: Check },
+] as const;
 
 const fieldsPerStep: ReadonlyArray<readonly (keyof TripPlanningInput)[]> = [
   ["origin", "destination"],
@@ -40,46 +62,72 @@ const fieldsPerStep: ReadonlyArray<readonly (keyof TripPlanningInput)[]> = [
   [],
 ];
 
+const transportIcon: Record<TransportMode, typeof Plane> = {
+  FLIGHT: Plane,
+  TRAIN: Train,
+  BUS: Bus,
+};
+
+const supportedCities = Object.keys(CITY_COORDINATES);
+
 function OptionButton({
   selected,
   label,
+  icon,
   onClick,
 }: {
   selected: boolean;
   label: string;
+  icon?: React.ReactNode;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-md border px-3 py-2 text-sm font-medium transition ${
-        selected ? "border-cyan-600 bg-cyan-50 text-cyan-900" : "border-border bg-white text-slate-700 hover:bg-muted"
-      }`}
+      aria-pressed={selected}
+      className={cn(
+        "inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold capitalize transition",
+        selected
+          ? "border-lavender-400 bg-lavender-100 text-lavender-800 shadow-sm ring-1 ring-lavender-200"
+          : "border-border bg-surface text-muted-foreground hover:border-lavender-300 hover:text-lavender-700",
+      )}
     >
-      {label.replace("_", " ")}
+      {icon}
+      {label.replace("_", " ").toLowerCase()}
     </button>
   );
 }
 
-export default function PlanPage() {
+function PlanWizard() {
   const router = useRouter();
+  const search = useSearchParams();
   const [step, setStep] = useState(0);
-  const form = useForm<TripPlanningInput>({
-    resolver: zodResolver(tripPlanningSchema),
-    defaultValues: {
-      origin: "Patna",
-      destination: "Goa",
-      departureDate: "2026-08-20",
-      returnDate: "2026-08-25",
-      travelers: 2,
+
+  const defaults = useMemo<TripPlanningInput>(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    const departureDate = search.get("departureDate") ?? addDays(today, 14);
+    const transport = search.get("transport") as TransportMode | null;
+    const travelers = Number(search.get("travelers"));
+    return {
+      origin: search.get("origin") ?? "Patna",
+      destination: search.get("destination") ?? "Goa",
+      departureDate,
+      returnDate: addDays(departureDate, 5),
+      travelers: Number.isFinite(travelers) && travelers > 0 ? travelers : 2,
       budget: 30000,
-      travelStyle: "BUDGET",
-      preferredTransport: ["FLIGHT", "TRAIN", "BUS"],
+      travelStyle: "BALANCED",
+      preferredTransport:
+        transport && TRANSPORT_MODES.includes(transport) ? [transport] : [...TRANSPORT_MODES],
       interests: ["BEACH", "NATURE", "HISTORY"],
       foodPreference: "VEGETARIAN",
-      accommodationPreference: "BUDGET",
-    },
+      accommodationPreference: "MID_RANGE",
+    };
+  }, [search]);
+
+  const form = useForm<TripPlanningInput>({
+    resolver: zodResolver(tripPlanningSchema),
+    defaultValues: defaults,
   });
 
   const values = form.watch();
@@ -96,14 +144,10 @@ export default function PlanPage() {
     },
   });
 
-  const progress = useMemo(() => ((step + 1) / steps.length) * 100, [step]);
-
   async function goToNextStep() {
     const fields = fieldsPerStep[step] ?? [];
     const valid = fields.length === 0 ? true : await form.trigger(fields);
-    if (valid) {
-      setStep((value) => value + 1);
-    }
+    if (valid) setStep((value) => value + 1);
   }
 
   function toggleTransport(mode: TransportMode) {
@@ -120,82 +164,149 @@ export default function PlanPage() {
     form.setValue("interests", next, { shouldDirty: true, shouldValidate: true });
   }
 
+  const StepIcon = steps[step]!.icon;
+
   return (
-    <AuthGuard>
-      <section className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <Badge>{steps[step]}</Badge>
-          <h1 className="mt-3 text-3xl font-bold tracking-normal">Plan a trip</h1>
-        </div>
-        <div className="w-full max-w-xs">
-          <Progress value={progress} />
-        </div>
+    <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+      <datalist id="plan-cities">
+        {supportedCities.map((city) => (
+          <option key={city} value={city} />
+        ))}
+      </datalist>
+
+      <div className="mb-8 space-y-1.5">
+        <Chip tone="lavender">
+          Step {step + 1} of {steps.length}
+        </Chip>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          Plan your trip
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Six quick answers, then every provider is searched in one pass.
+        </p>
       </div>
+
+      {/* Step rail — mirrors the reference's connected step indicator. */}
+      <ol className="relative mb-8 flex items-start justify-between gap-1">
+        <li
+          aria-hidden
+          className="pointer-events-none absolute left-5 right-5 top-5 h-0.5 rounded-full bg-lavender-100"
+        />
+        <li
+          aria-hidden
+          className="pointer-events-none absolute left-5 top-5 h-0.5 rounded-full bg-lavender-500 transition-all duration-500"
+          style={{ width: `calc((100% - 2.5rem) * ${step / (steps.length - 1)})` }}
+        />
+        {steps.map((item, index) => {
+          const Icon = item.icon;
+          const done = index < step;
+          const active = index === step;
+          return (
+            <li key={item.label} className="relative flex flex-1 flex-col items-center gap-2">
+              <span
+                className={cn(
+                  "flex h-10 w-10 items-center justify-center rounded-full border-2 border-white transition",
+                  done && "bg-lavender-500 text-white shadow-card",
+                  active && "bg-lavender-700 text-white shadow-card ring-4 ring-lavender-100",
+                  !done && !active && "bg-lavender-100 text-lavender-400",
+                )}
+              >
+                {done ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+              </span>
+              <span
+                className={cn(
+                  "hidden text-xs font-semibold sm:block",
+                  active ? "text-lavender-700" : "text-muted-foreground",
+                )}
+              >
+                {item.label}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
 
       <form onSubmit={form.handleSubmit((payload) => mutation.mutate(payload))}>
         <Card>
-          <CardHeader>
-            <CardTitle>{steps[step]}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-7 pt-7">
+            <div className="flex items-center gap-3.5 border-b border-border pb-5">
+              <IconTile tone="lavender" size="lg">
+                <StepIcon className="h-6 w-6" />
+              </IconTile>
+              <div>
+                <h2 className="text-xl font-bold tracking-tight text-foreground">
+                  {steps[step]!.label}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {
+                    [
+                      "Where are you starting from, and where to?",
+                      "When do you leave and come back?",
+                      "How many people are travelling?",
+                      "What is the all-in budget for the trip?",
+                      "Tell us how you like to travel.",
+                      "Check everything over before we search.",
+                    ][step]
+                  }
+                </p>
+              </div>
+            </div>
+
             {step === 0 ? (
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="space-y-2 text-sm font-medium">
-                  <span>Origin</span>
-                  <Input {...form.register("origin")} />
-                </label>
-                <label className="space-y-2 text-sm font-medium">
-                  <span>Destination</span>
-                  <Input {...form.register("destination")} />
-                </label>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <Field label="Origin" hint="Cities the providers can resolve">
+                  <Input list="plan-cities" {...form.register("origin")} />
+                </Field>
+                <Field label="Destination">
+                  <Input list="plan-cities" {...form.register("destination")} />
+                </Field>
               </div>
             ) : null}
 
             {step === 1 ? (
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="space-y-2 text-sm font-medium">
-                  <span>Departure</span>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <Field label="Departure">
                   <Input type="date" {...form.register("departureDate")} />
-                </label>
-                <label className="space-y-2 text-sm font-medium">
-                  <span>Return</span>
+                </Field>
+                <Field label="Return">
                   <Input type="date" {...form.register("returnDate")} />
-                </label>
+                </Field>
               </div>
             ) : null}
 
             {step === 2 ? (
-              <label className="block max-w-xs space-y-2 text-sm font-medium">
-                <span>Travelers</span>
+              <Field label="Travelers" className="max-w-xs" hint="Between 1 and 12">
                 <Input type="number" min={1} max={12} {...form.register("travelers", { valueAsNumber: true })} />
-              </label>
+              </Field>
             ) : null}
 
             {step === 3 ? (
-              <label className="block max-w-xs space-y-2 text-sm font-medium">
-                <span>Budget</span>
+              <Field label="Total budget (INR)" className="max-w-xs" hint="Covers transport, stay, food and activities">
                 <Input type="number" min={5000} step={500} {...form.register("budget", { valueAsNumber: true })} />
-              </label>
+              </Field>
             ) : null}
 
             {step === 4 ? (
-              <div className="space-y-6">
+              <div className="space-y-7">
                 <div className="space-y-3">
-                  <div className="text-sm font-semibold">Transport</div>
+                  <div className="field-label">Transport</div>
                   <div className="flex flex-wrap gap-2">
-                    {TRANSPORT_MODES.map((mode) => (
-                      <OptionButton
-                        key={mode}
-                        label={mode}
-                        selected={values.preferredTransport.includes(mode)}
-                        onClick={() => toggleTransport(mode)}
-                      />
-                    ))}
+                    {TRANSPORT_MODES.map((mode) => {
+                      const Icon = transportIcon[mode];
+                      return (
+                        <OptionButton
+                          key={mode}
+                          label={mode}
+                          icon={<Icon className="h-4 w-4" />}
+                          selected={values.preferredTransport.includes(mode)}
+                          onClick={() => toggleTransport(mode)}
+                        />
+                      );
+                    })}
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="text-sm font-semibold">Interests</div>
+                  <div className="field-label">Interests</div>
                   <div className="flex flex-wrap gap-2">
                     {INTEREST_CATEGORIES.map((interest) => (
                       <OptionButton
@@ -207,74 +318,85 @@ export default function PlanPage() {
                     ))}
                   </div>
                 </div>
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <label className="space-y-2 text-sm font-medium">
-                    <span>Style</span>
-                    <select className="h-11 w-full rounded-md border border-border bg-white px-3" {...form.register("travelStyle")}>
+                <div className="grid gap-5 sm:grid-cols-3">
+                  <Field label="Style">
+                    <Select {...form.register("travelStyle")}>
                       {TRAVEL_STYLES.map((style: TravelStyle) => (
                         <option key={style} value={style}>
                           {style.replace("_", " ")}
                         </option>
                       ))}
-                    </select>
-                  </label>
-                  <label className="space-y-2 text-sm font-medium">
-                    <span>Food</span>
-                    <select className="h-11 w-full rounded-md border border-border bg-white px-3" {...form.register("foodPreference")}>
+                    </Select>
+                  </Field>
+                  <Field label="Food">
+                    <Select {...form.register("foodPreference")}>
                       {FOOD_PREFERENCES.map((food: FoodPreference) => (
                         <option key={food} value={food}>
                           {food.replace("_", " ")}
                         </option>
                       ))}
-                    </select>
-                  </label>
-                  <label className="space-y-2 text-sm font-medium">
-                    <span>Accommodation</span>
-                    <select
-                      className="h-11 w-full rounded-md border border-border bg-white px-3"
-                      {...form.register("accommodationPreference")}
-                    >
+                    </Select>
+                  </Field>
+                  <Field label="Accommodation">
+                    <Select {...form.register("accommodationPreference")}>
                       {ACCOMMODATION_PREFERENCES.map((accommodation: AccommodationPreference) => (
                         <option key={accommodation} value={accommodation}>
                           {accommodation.replace("_", " ")}
                         </option>
                       ))}
-                    </select>
-                  </label>
+                    </Select>
+                  </Field>
                 </div>
               </div>
             ) : null}
 
             {step === 5 ? (
               <div className="grid gap-3 sm:grid-cols-2">
-                {[
-                  ["Route", `${values.origin} to ${values.destination}`],
-                  ["Dates", `${values.departureDate} to ${values.returnDate}`],
-                  ["Travelers", String(values.travelers)],
-                  ["Budget", `INR ${values.budget.toLocaleString("en-IN")}`],
-                  ["Style", values.travelStyle],
-                  ["Food", values.foodPreference],
-                ].map(([label, value]) => (
-                  <div key={label} className="rounded-md border border-border bg-slate-50 p-4">
-                    <div className="text-xs font-medium uppercase text-slate-500">{label}</div>
-                    <div className="mt-1 text-lg font-semibold">{value}</div>
+                {(
+                  [
+                    ["Route", `${values.origin} → ${values.destination}`],
+                    ["Dates", `${values.departureDate} → ${values.returnDate}`],
+                    ["Travelers", String(values.travelers)],
+                    ["Budget", `INR ${values.budget.toLocaleString("en-IN")}`],
+                    ["Style", values.travelStyle],
+                    ["Food", values.foodPreference],
+                    ["Transport", values.preferredTransport.join(", ")],
+                    ["Interests", values.interests.join(", ")],
+                  ] as const
+                ).map(([label, value]) => (
+                  <div key={label} className="rounded-xl border border-lavender-200 bg-lavender-50 p-4">
+                    <div className="field-label text-lavender-700">{label}</div>
+                    <div className="mt-1 text-base font-semibold capitalize text-foreground">
+                      {value.toString().toLowerCase()}
+                    </div>
                   </div>
                 ))}
               </div>
             ) : null}
 
             {Object.values(form.formState.errors)[0]?.message ? (
-              <p className="text-sm text-rose-600">{Object.values(form.formState.errors)[0]?.message}</p>
+              <p className="rounded-xl border border-blush-200 bg-blush-100 px-4 py-3 text-sm text-blush-900">
+                {Object.values(form.formState.errors)[0]?.message}
+              </p>
             ) : null}
-            {mutation.error ? <p className="text-sm text-rose-600">{mutation.error.message}</p> : null}
+            {mutation.error ? (
+              <p className="rounded-xl border border-blush-200 bg-blush-100 px-4 py-3 text-sm text-blush-900">
+                {mutation.error.message}
+              </p>
+            ) : null}
             {created ? (
-              <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
-                Trip created! Taking you to planning…
-              </div>
+              <p className="rounded-xl border border-mint-200 bg-mint-100 px-4 py-3 text-sm text-mint-900">
+                Trip created — taking you to the planning screen…
+              </p>
             ) : null}
 
-            <div className="flex items-center justify-between border-t border-border pt-5">
-              <Button type="button" variant="secondary" disabled={step === 0} onClick={() => setStep((value) => value - 1)}>
+            <div className="flex items-center justify-between border-t border-border pt-6">
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={step === 0}
+                onClick={() => setStep((value) => value - 1)}
+              >
                 <ArrowLeft className="h-4 w-4" />
                 Back
               </Button>
@@ -284,16 +406,25 @@ export default function PlanPage() {
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               ) : (
-                <Button disabled={mutation.isPending || created}>
+                <Button size="lg" disabled={mutation.isPending || created}>
                   <Check className="h-4 w-4" />
-                  Plan My Trip
+                  {mutation.isPending ? "Creating…" : "Plan my trip"}
                 </Button>
               )}
             </div>
           </CardContent>
         </Card>
       </form>
-      </section>
+    </section>
+  );
+}
+
+export default function PlanPage() {
+  return (
+    <AuthGuard>
+      <Suspense fallback={<div className="mx-auto max-w-5xl px-4 py-16 text-sm text-muted-foreground">Loading…</div>}>
+        <PlanWizard />
+      </Suspense>
     </AuthGuard>
   );
 }

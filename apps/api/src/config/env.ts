@@ -46,7 +46,16 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(8).default("change-me-local-secret"),
   AI_PROVIDER: z.enum(["TEMPLATE", "GEMINI", "GROQ", "HUGGINGFACE"]).default("GROQ"),
   API_PORT: z.coerce.number().int().positive().default(4000),
-  FRONTEND_URL: z.string().url().default("http://localhost:3000"),
+  /**
+   * Origin(s) the browser app is served from. Accepts a comma-separated list:
+   * Next.js silently falls back to the next free port when 3000 is taken, and a
+   * single pinned origin turns that into an opaque CORS failure at login.
+   */
+  FRONTEND_URL: z
+    .string()
+    .default("http://localhost:3000")
+    .transform((value) => value.split(",").map((origin) => origin.trim()).filter(Boolean))
+    .refine((origins) => origins.length > 0, "FRONTEND_URL must list at least one origin"),
   MIN_TRANSFER_MINUTES: z.coerce.number().int().positive().default(90),
   GROQ_API_KEY: z.string().optional(),
   GEMINI_API_KEY: z.string().optional(),

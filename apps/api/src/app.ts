@@ -13,13 +13,33 @@ import { tripsRoutes } from "./modules/trips/trips.routes";
 import { weatherRoutes } from "./modules/weather/weather.routes";
 import { errorHandler, notFoundHandler } from "./middleware/errors";
 
+/**
+ * Allowed browser origins. Outside production the loopback host and port are not
+ * worth pinning down — `next dev` moves to 3001+ whenever 3000 is occupied, and a
+ * mismatch surfaces to the user only as a login request that never completes.
+ */
+function corsOrigins(): cors.CorsOptions["origin"] {
+  if (env.NODE_ENV === "production") {
+    return env.FRONTEND_URL;
+  }
+
+  const loopback = /^http:\/\/(localhost|127\.0\.0\.1|\[::1\]):\d+$/;
+  return (origin, callback) => {
+    if (!origin || env.FRONTEND_URL.includes(origin) || loopback.test(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error(`Origin ${origin} is not allowed by CORS`));
+  };
+}
+
 export function createApp() {
   const app = express();
 
   app.use(helmet());
   app.use(
     cors({
-      origin: env.FRONTEND_URL,
+      origin: corsOrigins(),
       credentials: true,
     }),
   );

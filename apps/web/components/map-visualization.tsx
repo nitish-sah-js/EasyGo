@@ -1,12 +1,27 @@
-import { Hotel, MapPin, Utensils } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { Hotel, MapPin, Navigation, Utensils, X } from "lucide-react";
 import type { Attraction, Hotel as HotelType, Restaurant, TripResultPayload } from "@nexttour/shared";
+import { Chip } from "@/components/ui/chip";
+import { cn } from "@/lib/utils";
+
+type MarkerType = "destination" | "hotel" | "attraction" | "restaurant";
 
 type Marker = {
   id: string;
   label: string;
+  detail?: string;
   latitude: number;
   longitude: number;
-  type: "origin" | "destination" | "hotel" | "attraction" | "restaurant";
+  type: MarkerType;
+};
+
+const markerStyle: Record<MarkerType, { pin: string; icon: typeof MapPin; label: string }> = {
+  destination: { pin: "bg-lavender-700", icon: Navigation, label: "Destination" },
+  hotel: { pin: "bg-sky-700", icon: Hotel, label: "Stay" },
+  attraction: { pin: "bg-orchid-600", icon: MapPin, label: "Place" },
+  restaurant: { pin: "bg-peach-700", icon: Utensils, label: "Food" },
 };
 
 function markerPosition(marker: Marker, markers: Marker[]) {
@@ -21,16 +36,6 @@ function markerPosition(marker: Marker, markers: Marker[]) {
   return { left: `${x}%`, top: `${y}%` };
 }
 
-function IconFor({ type }: { type: Marker["type"] }) {
-  if (type === "hotel") {
-    return <Hotel className="h-3.5 w-3.5" />;
-  }
-  if (type === "restaurant") {
-    return <Utensils className="h-3.5 w-3.5" />;
-  }
-  return <MapPin className="h-3.5 w-3.5" />;
-}
-
 export function MapVisualization({
   trip,
   hotel,
@@ -42,6 +47,8 @@ export function MapVisualization({
   attractions: Attraction[];
   restaurants: Restaurant[];
 }) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
   // Every coordinate comes from a real provider; with none there is nothing
   // truthful to plot, so the map shows an empty state instead of a placeholder city.
   const destinationLat = hotel?.latitude ?? attractions[0]?.latitude ?? restaurants[0]?.latitude;
@@ -49,7 +56,7 @@ export function MapVisualization({
 
   if (destinationLat === undefined || destinationLng === undefined) {
     return (
-      <div className="flex aspect-[16/10] min-h-[280px] items-center justify-center rounded-lg border border-dashed border-border bg-slate-50 p-6 text-center text-sm text-slate-600">
+      <div className="flex aspect-[16/11] min-h-[280px] items-center justify-center rounded-2xl border border-dashed border-lavender-200 bg-lavender-50 p-6 text-center text-sm text-muted-foreground">
         No mapped locations yet — the hotel and place providers returned no results for this trip.
       </div>
     );
@@ -59,6 +66,7 @@ export function MapVisualization({
     {
       id: "destination",
       label: trip.destination,
+      detail: "Trip destination",
       latitude: destinationLat,
       longitude: destinationLng,
       type: "destination",
@@ -68,6 +76,7 @@ export function MapVisualization({
           {
             id: hotel.id,
             label: hotel.name,
+            detail: hotel.location,
             latitude: hotel.latitude,
             longitude: hotel.longitude,
             type: "hotel" as const,
@@ -77,6 +86,7 @@ export function MapVisualization({
     ...attractions.slice(0, 6).map((attraction) => ({
       id: attraction.id,
       label: attraction.name,
+      detail: attraction.category.replace("_", " "),
       latitude: attraction.latitude,
       longitude: attraction.longitude,
       type: "attraction" as const,
@@ -84,42 +94,107 @@ export function MapVisualization({
     ...restaurants.slice(0, 3).map((restaurant) => ({
       id: restaurant.id,
       label: restaurant.name,
+      detail: restaurant.cuisine,
       latitude: restaurant.latitude,
       longitude: restaurant.longitude,
       type: "restaurant" as const,
     })),
   ];
 
+  const selected = markers.find((marker) => marker.id === selectedId);
+
   return (
-    <div className="relative aspect-[16/10] min-h-[280px] overflow-hidden rounded-lg border border-border bg-[#e8f4ef]">
-      <div className="absolute inset-0 opacity-70 [background-image:linear-gradient(#cbd5e1_1px,transparent_1px),linear-gradient(90deg,#cbd5e1_1px,transparent_1px)] [background-size:36px_36px]" />
-      <svg className="absolute inset-0 h-full w-full" role="presentation">
-        <polyline
-          points={markers
-            .slice(0, 7)
-            .map((marker) => {
-              const position = markerPosition(marker, markers);
-              return `${position.left.replace("%", "")},${position.top.replace("%", "")}`;
-            })
-            .join(" ")}
-          fill="none"
-          stroke="#0891b2"
-          strokeWidth="1.8"
-          strokeDasharray="4 4"
-          vectorEffect="non-scaling-stroke"
-        />
-      </svg>
-      {markers.map((marker) => (
-        <div
-          key={marker.id}
-          className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-md border border-white bg-white px-2 py-1 text-xs font-medium shadow"
-          style={markerPosition(marker, markers)}
-          title={marker.label}
-        >
-          <IconFor type={marker.type} />
-          <span className="max-w-[8rem] truncate">{marker.label}</span>
-        </div>
-      ))}
+    <div className="space-y-3">
+      <div className="relative aspect-[16/11] min-h-[300px] overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-mint-100 via-aqua-50 to-periwinkle-100 shadow-card">
+        <div className="absolute inset-0 opacity-60 [background-image:linear-gradient(#cfbaf0_1px,transparent_1px),linear-gradient(90deg,#cfbaf0_1px,transparent_1px)] [background-size:40px_40px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_70%,rgba(152,245,225,0.55),transparent_45%),radial-gradient(circle_at_75%_30%,rgba(163,196,243,0.45),transparent_45%)]" />
+
+        <svg className="absolute inset-0 h-full w-full" role="presentation">
+          <polyline
+            points={markers
+              .slice(0, 7)
+              .map((marker) => {
+                const position = markerPosition(marker, markers);
+                return `${position.left.replace("%", "")},${position.top.replace("%", "")}`;
+              })
+              .join(" ")}
+            fill="none"
+            stroke="#7b4aca"
+            strokeWidth="2"
+            strokeDasharray="5 5"
+            strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+
+        {markers.map((marker) => {
+          const style = markerStyle[marker.type];
+          const Icon = style.icon;
+          const active = marker.id === selectedId;
+          return (
+            <button
+              key={marker.id}
+              type="button"
+              onClick={() => setSelectedId(active ? null : marker.id)}
+              title={marker.label}
+              aria-label={`${style.label}: ${marker.label}`}
+              style={markerPosition(marker, markers)}
+              className={cn(
+                "absolute -translate-x-1/2 -translate-y-1/2 rounded-full p-2 text-white shadow-lift ring-2 ring-white transition hover:scale-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-lavender-300",
+                style.pin,
+                active && "scale-110 ring-4",
+              )}
+            >
+              <Icon className="h-4 w-4" />
+            </button>
+          );
+        })}
+
+        {selected ? (
+          <div className="absolute bottom-4 left-1/2 w-[min(20rem,calc(100%-2rem))] -translate-x-1/2 rounded-2xl border border-border bg-surface p-4 shadow-panel">
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={() => setSelectedId(null)}
+              className="absolute right-3 top-3 rounded-full p-1 text-muted-foreground transition hover:bg-lavender-100 hover:text-lavender-700"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <Chip tone="lavender" className="text-[0.65rem]">
+              {markerStyle[selected.type].label}
+            </Chip>
+            <h4 className="mt-2 pr-6 text-base font-bold tracking-tight text-foreground">
+              {selected.label}
+            </h4>
+            {selected.detail ? (
+              <p className="mt-0.5 text-xs capitalize text-muted-foreground">{selected.detail}</p>
+            ) : null}
+            <p className="mt-2 text-xs tabular-nums text-muted-foreground">
+              {selected.latitude.toFixed(4)}, {selected.longitude.toFixed(4)}
+            </p>
+          </div>
+        ) : null}
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {(Object.keys(markerStyle) as MarkerType[]).map((type) => {
+          const style = markerStyle[type];
+          const Icon = style.icon;
+          const count = markers.filter((marker) => marker.type === type).length;
+          if (count === 0) return null;
+          return (
+            <span
+              key={type}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-xs font-medium text-muted-foreground"
+            >
+              <span className={cn("flex h-4 w-4 items-center justify-center rounded-full text-white", style.pin)}>
+                <Icon className="h-2.5 w-2.5" />
+              </span>
+              {style.label} · {count}
+            </span>
+          );
+        })}
+      </div>
     </div>
   );
 }

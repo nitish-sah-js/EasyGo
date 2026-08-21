@@ -3,15 +3,19 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Loader2, RefreshCw, XCircle } from "lucide-react";
+import { AlertTriangle, ArrowRight, Check, Loader2, RefreshCw, XCircle } from "lucide-react";
 import type { PlanningStatus } from "@nexttour/shared";
 import { AuthGuard } from "@/components/auth-guard";
-import { Badge } from "@/components/ui/badge";
+import { PageHero } from "@/components/page-hero";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { Card, CardContent } from "@/components/ui/card";
+import { Chip } from "@/components/ui/chip";
 import { statusLabel } from "@/lib/utils";
+<<<<<<< Updated upstream
 import { friendlyProviderMessage } from "@/lib/provider-messages";
+=======
+import { cn } from "@/lib/utils";
+>>>>>>> Stashed changes
 import { getTripStatus, startTripPlanning } from "@/services/trips";
 
 function isTerminal(status?: PlanningStatus) {
@@ -46,41 +50,100 @@ export default function PlanningPage() {
   return (
     <AuthGuard>
       <section className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-6">
-          <Badge>{statusLabel(data?.status)}</Badge>
-          <h1 className="mt-3 text-3xl font-bold tracking-normal">Planning your journey...</h1>
+        <PageHero
+          eyebrow={<Chip tone="onInk">{statusLabel(data?.status)}</Chip>}
+          title="Planning your journey"
+          meta={`${doneCount} of ${totalCount} steps complete`}
+          action={
+            data && isTerminal(data.status) && data.status !== "FAILED" ? (
+              <Link href={`/trips/${params.id}/result`}>
+                <Button variant="onInk" shape="pill">
+                  Your trip is ready
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            ) : null
+          }
+        />
+
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-lavender-100">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-lavender-500 to-aqua-400 transition-all duration-700"
+            style={{ width: `${progress}%` }}
+          />
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Progress</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <Progress value={progress} />
-            <div className="space-y-3">
+        <Card className="mt-6">
+          <CardContent className="pt-6">
+            <ol className="relative space-y-1 border-l-2 border-dashed border-lavender-200 pl-7">
               {data?.progress.map((step) => (
-                <div key={step.key} className="flex items-center gap-3 rounded-md border border-border bg-white p-3">
-                  {step.status === "COMPLETED" ? (
-                    <Check className="h-5 w-5 text-emerald-600" />
-                  ) : step.status === "FAILED" ? (
-                    <XCircle className="h-5 w-5 text-rose-600" />
-                  ) : (
-                    <Loader2 className="h-5 w-5 animate-spin text-cyan-700" />
-                  )}
-                  <span className="text-sm font-medium">{step.label}</span>
-                </div>
+                <li key={step.key} className="relative py-2.5">
+                  <span
+                    className={cn(
+                      "absolute -left-[2.3rem] top-3 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white shadow-sm",
+                      step.status === "COMPLETED" && "bg-mint-800 text-white",
+                      step.status === "FAILED" && "bg-blush-600 text-white",
+                      step.status === "PROCESSING" && "bg-lavender-600 text-white",
+                      step.status === "PENDING" && "bg-lavender-100 text-lavender-400",
+                    )}
+                  >
+                    {step.status === "COMPLETED" ? (
+                      <Check className="h-4 w-4" />
+                    ) : step.status === "FAILED" ? (
+                      <XCircle className="h-4 w-4" />
+                    ) : step.status === "PROCESSING" ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                    )}
+                  </span>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span
+                      className={cn(
+                        "text-sm font-semibold",
+                        step.status === "PENDING" ? "text-muted-foreground" : "text-foreground",
+                      )}
+                    >
+                      {step.label}
+                    </span>
+                    {step.status === "FAILED" ? (
+                      <Chip tone="blush" className="text-[0.65rem]">
+                        failed
+                      </Chip>
+                    ) : step.status === "PROCESSING" ? (
+                      <Chip tone="lavender" className="text-[0.65rem]">
+                        running
+                      </Chip>
+                    ) : null}
+                  </div>
+                </li>
               ))}
-            </div>
+              {!data ? <li className="py-3 text-sm text-muted-foreground">Fetching status…</li> : null}
+            </ol>
 
             {data?.providerNotes.length ? (
+<<<<<<< Updated upstream
               <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
                 Some options are temporarily unavailable. {data.providerNotes.map(friendlyProviderMessage).join(" ")}
+=======
+              <div className="mt-6 rounded-2xl border border-peach-200 bg-peach-100 p-4 text-sm text-peach-900">
+                <div className="flex items-center gap-2 font-semibold">
+                  <AlertTriangle className="h-4 w-4" />
+                  Some options are temporarily unavailable
+                </div>
+                <p className="mt-1.5">{data.providerNotes.join("; ")}</p>
+>>>>>>> Stashed changes
               </div>
             ) : null}
-            {data?.error || error ? <p className="text-sm text-rose-600">{data?.error ?? error?.message}</p> : null}
+
+            {data?.error || error ? (
+              <p className="mt-6 rounded-2xl border border-blush-200 bg-blush-100 p-4 text-sm text-blush-900">
+                {data?.error ?? error?.message}
+              </p>
+            ) : null}
 
             {data?.status === "FAILED" ? (
-              <div className="flex items-center gap-3">
+              <div className="mt-6 flex flex-wrap items-center gap-3">
                 <Button onClick={() => retryMutation.mutate()} disabled={retryMutation.isPending}>
                   <RefreshCw className="h-4 w-4" />
                   {retryMutation.isPending ? "Retrying…" : "Retry planning"}
@@ -89,12 +152,6 @@ export default function PlanningPage() {
                   <Button variant="secondary">Trip details</Button>
                 </Link>
               </div>
-            ) : null}
-
-            {data && isTerminal(data.status) && data.status !== "FAILED" ? (
-              <Link href={`/trips/${params.id}/result`}>
-                <Button>Trip Ready</Button>
-              </Link>
             ) : null}
           </CardContent>
         </Card>

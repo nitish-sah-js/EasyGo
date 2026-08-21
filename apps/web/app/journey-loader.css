@@ -1,0 +1,405 @@
+/* ============================================================================
+   Journey loader — full-screen flight animation shown while the page loads.
+
+   Motion is expressed entirely as CSS animation so a single
+   prefers-reduced-motion block can disable all of it, and so every animated
+   property stays on the compositor (transform / opacity), with the one
+   exception of the contrail, which needs stroke-dashoffset to stay welded to
+   the aircraft. Everything scales from the SVG viewBox, so there are no
+   breakpoint-specific rules.
+   ============================================================================ */
+
+:root {
+  /* One clock for the whole scene: aircraft, contrail and destination markers
+     all derive their timing from this, which is what keeps them in sync.
+     Changing this number is the only thing needed to retime the flight. */
+  --jl-flight: 3s;
+
+  /* The flight path, authored twice. A single wide curve cannot survive being
+     cropped to a phone's aspect ratio — the aircraft would spend most of the
+     loop outside the visible band — so portrait gets its own steeper climb.
+     The route <path> geometry is swapped by the same media query below. */
+  --jl-path: path(
+    "M -80 470 C 240 330, 470 210, 760 226 C 1010 240, 1180 150, 1520 34"
+  );
+
+  /* How far the centre card drops clear of the flight path. */
+  --jl-card-y: 0px;
+}
+
+/* Taller than 5:4 — phones held upright. */
+@media (max-aspect-ratio: 4 / 5) {
+  :root {
+    --jl-path: path(
+      "M 560 1010 C 640 800, 660 655, 700 520 C 745 375, 800 195, 870 -70"
+    );
+    --jl-card-y: 13vh;
+  }
+}
+
+.jl-root {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 78% 6%, rgba(251, 248, 204, 0.7), transparent 34%),
+    radial-gradient(circle at 10% 92%, rgba(207, 186, 240, 0.5), transparent 50%),
+    linear-gradient(
+      180deg,
+      #9fd4ef 0%,
+      #b8e0f6 18%,
+      #d3e7fb 42%,
+      #e9edfc 68%,
+      #f7f4fe 100%
+    );
+  transition:
+    opacity 620ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 620ms linear;
+}
+
+/* Lifts away as one piece, with a whisper of scale so it reads as a reveal
+   rather than a dissolve. */
+.jl-root[data-state="leaving"] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------- map wash */
+
+/* Stands in for a world map: a low-contrast dot grid, faded at the edges. */
+.jl-map {
+  position: absolute;
+  inset: -10%;
+  background-image: radial-gradient(rgba(83, 47, 141, 0.5) 1.1px, transparent 1.1px);
+  background-size: 26px 26px;
+  opacity: 0.09;
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 35%, transparent 78%);
+  mask-image: radial-gradient(ellipse at center, #000 35%, transparent 78%);
+}
+
+/* ----------------------------------------------------------------- clouds */
+
+.jl-clouds {
+  position: absolute;
+  inset: 0;
+}
+
+.jl-cloud {
+  position: absolute;
+  color: #ffffff;
+  will-change: transform;
+  animation: jl-drift linear infinite;
+}
+
+/* Three depths. Nearer clouds are larger, softer and move faster — the whole
+   of the parallax effect is these three durations diverging. */
+.jl-cloud--far {
+  opacity: 0.5;
+  filter: blur(0.5px);
+  animation-duration: 96s;
+}
+.jl-cloud--mid {
+  opacity: 0.72;
+  filter: blur(1.5px);
+  animation-duration: 64s;
+}
+.jl-cloud--near {
+  opacity: 0.85;
+  filter: blur(5px);
+  animation-duration: 40s;
+}
+
+@keyframes jl-drift {
+  from {
+    transform: translate3d(115vw, 0, 0);
+  }
+  to {
+    transform: translate3d(-40vw, 0, 0);
+  }
+}
+
+/* ------------------------------------------------------------------ scene */
+
+.jl-scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.jl-lane--tall {
+  display: none;
+}
+
+@media (max-aspect-ratio: 4 / 5) {
+  .jl-lane--wide {
+    display: none;
+  }
+  .jl-lane--tall {
+    display: block;
+  }
+}
+
+/* The full route, always visible and deliberately faint. */
+.jl-route {
+  stroke-dasharray: 1 13;
+  stroke-linecap: round;
+}
+
+/* The contrail.
+ *
+ * `pathLength="1"` normalises the route, so every number here is a fraction of
+ * the whole flight. SVG starts a dash at path position `-stroke-dashoffset`, so
+ * holding
+ *
+ *     dashoffset = L - p        (L = dash length, p = the aircraft's progress)
+ *
+ * pins a dash of length L to [p - L, p] — ending exactly under the aircraft.
+ * Three of them at decreasing lengths stack into a taper: the long faint one
+ * lingers as diffuse vapour, the short bright one hugs the tailplane. All are
+ * linear over --jl-flight, which is what keeps them welded to jl-fly.
+ *
+ * Written as literals on purpose: calc() over a unitless custom property
+ * resolves to NaN here, which silently freezes the dash at its start value. */
+.jl-trail {
+  stroke-linecap: round;
+  stroke: #ffffff;
+  animation-duration: var(--jl-flight);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.jl-trail--haze {
+  stroke-dasharray: 0.17 1;
+  stroke-width: 15;
+  stroke-opacity: 0.34;
+  animation-name: jl-trail-haze;
+}
+.jl-trail--body {
+  stroke-dasharray: 0.08 1;
+  stroke-width: 6;
+  stroke-opacity: 0.62;
+  animation-name: jl-trail-body;
+}
+.jl-trail--tip {
+  stroke-dasharray: 0.032 1;
+  stroke-width: 3;
+  stroke-opacity: 0.95;
+  animation-name: jl-trail-tip;
+}
+
+@keyframes jl-trail-haze {
+  from { stroke-dashoffset: 0.17; }
+  to   { stroke-dashoffset: -0.83; }
+}
+@keyframes jl-trail-body {
+  from { stroke-dashoffset: 0.08; }
+  to   { stroke-dashoffset: -0.92; }
+}
+@keyframes jl-trail-tip {
+  from { stroke-dashoffset: 0.032; }
+  to   { stroke-dashoffset: -0.968; }
+}
+
+/* --------------------------------------------------------------- aircraft */
+
+.jl-plane {
+  offset-path: var(--jl-path);
+  offset-rotate: auto;
+  offset-anchor: center;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: jl-fly var(--jl-flight) linear infinite;
+  will-change: offset-distance;
+}
+
+@keyframes jl-fly {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+}
+
+/* Independent of the flight path, so the aircraft breathes a little instead of
+   tracking the curve with machine precision. */
+.jl-plane__bob {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: jl-bob 3.4s ease-in-out infinite;
+}
+
+@keyframes jl-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2.2px);
+  }
+}
+
+/* Browsers without motion-path still get a crossing aircraft, just a level one. */
+@supports not (offset-path: path("M 0 0 L 1 1")) {
+  .jl-plane {
+    animation-name: jl-fly-fallback;
+  }
+  @keyframes jl-fly-fallback {
+    from {
+      transform: translate(-60px, 380px);
+    }
+    to {
+      transform: translate(1500px, 240px);
+    }
+  }
+}
+
+/* ---------------------------------------------------- destination markers */
+
+/* Each marker blooms as the aircraft reaches it. The delay is the marker's
+   position along the route expressed in flight-clock time. */
+.jl-pin {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  opacity: 0;
+  animation: jl-pin var(--jl-flight) ease-out infinite;
+}
+
+@keyframes jl-pin {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(6px);
+  }
+  7% {
+    opacity: 1;
+    transform: scale(1.18) translateY(0);
+  }
+  13% {
+    transform: scale(1) translateY(0);
+  }
+  76% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  92%,
+  100% {
+    opacity: 0;
+    transform: scale(0.92) translateY(0);
+  }
+}
+
+.jl-pin__pulse {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: jl-pulse 2.6s ease-out infinite;
+}
+
+@keyframes jl-pulse {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.4);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+/* -------------------------------------------------------------- centre card */
+
+.jl-content {
+  position: relative;
+  z-index: 2;
+  transform: translateY(var(--jl-card-y));
+  animation: jl-rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes jl-rise {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--jl-card-y) + 14px));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(var(--jl-card-y));
+  }
+}
+
+.jl-dot {
+  animation: jl-dot 1.4s ease-in-out infinite;
+}
+.jl-dot:nth-child(2) {
+  animation-delay: 0.16s;
+}
+.jl-dot:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+@keyframes jl-dot {
+  0%,
+  70%,
+  100% {
+    opacity: 0.28;
+    transform: translateY(0) scale(0.82);
+  }
+  35% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1);
+  }
+}
+
+/* ============================================================================
+   Reduced motion — nothing moves. The scene is posed at a point mid-route so it
+   still reads as a journey in progress: aircraft two-thirds of the way along,
+   contrail behind it, every marker already placed.
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .jl-root,
+  .jl-root * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .jl-root {
+    transition: opacity 1ms linear !important;
+  }
+
+  /* Posed between the second and third marker, so the aircraft never lands on
+     top of one when the flight is frozen. */
+  .jl-plane {
+    offset-distance: 55%;
+  }
+
+  /* Each layer's L - 0.55, matching the aircraft posed at 55% above. */
+  .jl-trail--haze { stroke-dashoffset: -0.38; }
+  .jl-trail--body { stroke-dashoffset: -0.47; }
+  .jl-trail--tip  { stroke-dashoffset: -0.518; }
+
+  .jl-pin {
+    opacity: 1;
+    transform: none;
+  }
+
+  .jl-content {
+    opacity: 1;
+    transform: translateY(var(--jl-card-y));
+  }
+
+  .jl-pin__pulse {
+    opacity: 0;
+  }
+
+  .jl-dot {
+    opacity: 0.75;
+  }
+}
