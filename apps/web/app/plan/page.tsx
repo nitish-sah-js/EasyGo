@@ -89,8 +89,8 @@ function OptionButton({
       className={cn(
         "inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold capitalize transition",
         selected
-          ? "border-lavender-400 bg-lavender-100 text-lavender-800 shadow-sm ring-1 ring-lavender-200"
-          : "border-border bg-surface text-muted-foreground hover:border-lavender-300 hover:text-lavender-700",
+          ? "border-brand-400 bg-brand-100 text-brand-800 shadow-sm ring-1 ring-brand-200"
+          : "border-border bg-surface text-muted-foreground hover:border-brand-300 hover:text-brand-700",
       )}
     >
       {icon}
@@ -175,7 +175,7 @@ function PlanWizard() {
       </datalist>
 
       <div className="mb-8 space-y-1.5">
-        <Chip tone="lavender">
+        <Chip tone="base">
           Step {step + 1} of {steps.length}
         </Chip>
         <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
@@ -190,11 +190,11 @@ function PlanWizard() {
       <ol className="relative mb-8 flex items-start justify-between gap-1">
         <li
           aria-hidden
-          className="pointer-events-none absolute left-5 right-5 top-5 h-0.5 rounded-full bg-lavender-100"
+          className="pointer-events-none absolute left-5 right-5 top-5 h-0.5 rounded-full bg-brand-100"
         />
         <li
           aria-hidden
-          className="pointer-events-none absolute left-5 top-5 h-0.5 rounded-full bg-lavender-500 transition-all duration-500"
+          className="pointer-events-none absolute left-5 top-5 h-0.5 rounded-full bg-brand-500 transition-all duration-500"
           style={{ width: `calc((100% - 2.5rem) * ${step / (steps.length - 1)})` }}
         />
         {steps.map((item, index) => {
@@ -206,9 +206,9 @@ function PlanWizard() {
               <span
                 className={cn(
                   "flex h-10 w-10 items-center justify-center rounded-full border-2 border-white transition",
-                  done && "bg-lavender-500 text-white shadow-card",
-                  active && "bg-lavender-700 text-white shadow-card ring-4 ring-lavender-100",
-                  !done && !active && "bg-lavender-100 text-lavender-400",
+                  done && "bg-brand-500 text-white shadow-card",
+                  active && "bg-brand-700 text-white shadow-card ring-4 ring-brand-100",
+                  !done && !active && "bg-brand-100 text-brand-400",
                 )}
               >
                 {done ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
@@ -216,7 +216,7 @@ function PlanWizard() {
               <span
                 className={cn(
                   "hidden text-xs font-semibold sm:block",
-                  active ? "text-lavender-700" : "text-muted-foreground",
+                  active ? "text-brand-700" : "text-muted-foreground",
                 )}
               >
                 {item.label}
@@ -230,7 +230,7 @@ function PlanWizard() {
         <Card>
           <CardContent className="space-y-7 pt-7">
             <div className="flex items-center gap-3.5 border-b border-border pb-5">
-              <IconTile tone="lavender" size="lg">
+              <IconTile tone="base" size="lg">
                 <StepIcon className="h-6 w-6" />
               </IconTile>
               <div>
@@ -364,8 +364,8 @@ function PlanWizard() {
                     ["Interests", values.interests.join(", ")],
                   ] as const
                 ).map(([label, value]) => (
-                  <div key={label} className="rounded-xl border border-lavender-200 bg-lavender-50 p-4">
-                    <div className="field-label text-lavender-700">{label}</div>
+                  <div key={label} className="rounded-xl border border-brand-200 bg-brand-50 p-4">
+                    <div className="field-label text-brand-700">{label}</div>
                     <div className="mt-1 text-base font-semibold capitalize text-foreground">
                       {value.toString().toLowerCase()}
                     </div>

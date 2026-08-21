@@ -5,21 +5,26 @@ import { cn } from "@/lib/utils";
 /**
  * A decorative landscape built entirely from the brand palette.
  *
- * The reference design fills its destination and stay cards with photography.
- * Nothing in the domain model carries an image URL, and dropping stock photos
- * onto a named real hotel or attraction would assert something untrue about it,
- * so each card gets an abstract horizon instead — deterministic per `seed`, so
- * the same place always renders the same scene.
+ * Cards prefer a real Google Places photo of the place (see `PlaceImage`); this
+ * is what shows when there isn't one — the place has no photo, no Places key is
+ * configured, or the resolved URL failed to load. Stock photography is
+ * deliberately not used as the stand-in: putting an arbitrary beach under a named
+ * hotel would assert something untrue about it. The scene is deterministic per
+ * `seed`, so the same place always falls back to the same horizon.
+ *
+ * Every scene is the same hue. What separates one card from the next is how far
+ * up the ramp its sky climbs and how dark its hills sit, which is enough to keep
+ * a grid of eight cards from reading as eight copies of one card.
  */
 const scenes = [
-  { sky: "from-lavender-200 via-orchid-200 to-peach-200", sun: "bg-butter-200", hills: ["#a884e1", "#7b4aca"] },
-  { sky: "from-periwinkle-200 via-sky-200 to-aqua-200", sun: "bg-white", hills: ["#5b93e1", "#2d69be"] },
-  { sky: "from-aqua-200 via-mint-200 to-leaf-200", sun: "bg-butter-200", hills: ["#57e6c7", "#229b81"] },
-  { sky: "from-peach-200 via-blush-200 to-orchid-200", sun: "bg-butter-100", hills: ["#f5ac70", "#a2581b"] },
-  { sky: "from-sky-200 via-lavender-200 to-blush-200", sun: "bg-white", hills: ["#a884e1", "#532f8d"] },
-  { sky: "from-butter-200 via-peach-200 to-blush-200", sun: "bg-white", hills: ["#ee964e", "#8d2f7c"] },
-  { sky: "from-mint-200 via-aqua-200 to-periwinkle-200", sun: "bg-butter-100", hills: ["#38dbb8", "#265597"] },
-  { sky: "from-orchid-200 via-lavender-200 to-periwinkle-200", sun: "bg-blush-100", hills: ["#9166d6", "#42266d"] },
+  { sky: "from-brand-50 via-brand-100 to-brand-200", sun: "bg-white", hills: ["#64b5f6", "#1976d2"] },
+  { sky: "from-brand-100 via-brand-200 to-brand-300", sun: "bg-brand-50", hills: ["#42a5f5", "#1565c0"] },
+  { sky: "from-brand-200 via-brand-300 to-brand-400", sun: "bg-white", hills: ["#2196f3", "#0d47a1"] },
+  { sky: "from-brand-50 via-brand-200 to-brand-400", sun: "bg-brand-50", hills: ["#1e88e5", "#0d47a1"] },
+  { sky: "from-brand-100 via-brand-300 to-brand-500", sun: "bg-white", hills: ["#1976d2", "#0d47a1"] },
+  { sky: "from-brand-200 via-brand-100 to-brand-300", sun: "bg-brand-50", hills: ["#64b5f6", "#1565c0"] },
+  { sky: "from-brand-300 via-brand-400 to-brand-600", sun: "bg-brand-100", hills: ["#1565c0", "#0d47a1"] },
+  { sky: "from-brand-50 via-brand-300 to-brand-500", sun: "bg-white", hills: ["#2196f3", "#1565c0"] },
 ] as const;
 
 export function Scenic({
@@ -49,7 +54,7 @@ export function Scenic({
         <path d="M0 200v-46q72-40 148-4t124-18 128 22v46Z" fill={scene.hills[1]} opacity="0.6" />
       </svg>
       {scrim ? (
-        <div className="absolute inset-0 bg-gradient-to-t from-lavender-900/85 via-lavender-900/25 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-900/85 via-brand-900/25 to-transparent" />
       ) : null}
       {children ? <div className="relative h-full">{children}</div> : null}
     </div>

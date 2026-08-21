@@ -33,7 +33,7 @@ export function AuthLayout({
           <h2 className="text-3xl font-bold leading-tight tracking-tight text-white">
             Plan the whole journey,
             <br />
-            <span className="text-aqua-200">not just the flight.</span>
+            <span className="text-brand-200">not just the flight.</span>
           </h2>
           <ul className="space-y-4">
             {highlights.map((item) => {
@@ -43,13 +43,13 @@ export function AuthLayout({
                   <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/15 text-white ring-1 ring-inset ring-white/20">
                     <Icon className="h-4 w-4" />
                   </span>
-                  <span className="text-sm leading-6 text-lavender-100">{item.copy}</span>
+                  <span className="text-sm leading-6 text-brand-100">{item.copy}</span>
                 </li>
               );
             })}
           </ul>
         </div>
-        <p className="text-xs text-lavender-200">Unified travel planning for eight Indian cities.</p>
+        <p className="text-xs text-brand-200">Unified travel planning for eight Indian cities.</p>
       </div>
 
       <div className="flex items-center">

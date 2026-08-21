@@ -35,7 +35,7 @@ export default function LoginPage() {
       footer={
         <>
           New here?{" "}
-          <Link href="/register" className="font-semibold text-lavender-600 hover:text-lavender-700">
+          <Link href="/register" className="font-semibold text-brand-600 hover:text-brand-700">
             Create an account
           </Link>
         </>

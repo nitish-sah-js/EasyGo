@@ -64,13 +64,13 @@ export function SearchPanel() {
               aria-pressed={active}
               className={cn(
                 "relative flex items-center gap-2 px-3.5 py-2.5 text-sm font-semibold transition",
-                active ? "text-lavender-700" : "text-muted-foreground hover:text-lavender-700",
+                active ? "text-brand-700" : "text-muted-foreground hover:text-brand-700",
               )}
             >
               <Icon className="h-4 w-4" />
               {tab.label}
               {active ? (
-                <span className="absolute inset-x-2 -bottom-1 h-0.5 rounded-full bg-lavender-600" />
+                <span className="absolute inset-x-2 -bottom-1 h-0.5 rounded-full bg-brand-600" />
               ) : null}
             </button>
           );
@@ -141,9 +141,9 @@ function PanelField({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-white px-3.5 py-2.5 transition focus-within:border-lavender-400 focus-within:ring-4 focus-within:ring-lavender-100">
+    <div className="rounded-xl border border-border bg-white px-3.5 py-2.5 transition focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100">
       <div className="field-label mb-1">{label}</div>
-      <div className="flex items-center gap-2 text-lavender-600">
+      <div className="flex items-center gap-2 text-brand-600">
         {icon}
         <div className="min-w-0 flex-1 text-foreground">{children}</div>
       </div>

@@ -110,11 +110,11 @@ export function JourneyLoader() {
       >
         <defs>
           <linearGradient id="jl-plane-gradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#6739b1" />
-            <stop offset="100%" stopColor="#42266d" />
+            <stop offset="0%" stopColor="#1e88e5" />
+            <stop offset="100%" stopColor="#1565c0" />
           </linearGradient>
           <filter id="jl-plane-shadow" x="-60%" y="-60%" width="220%" height="220%">
-            <feDropShadow dx="0" dy="5" stdDeviation="5" floodColor="#301e4e" floodOpacity="0.26" />
+            <feDropShadow dx="0" dy="5" stdDeviation="5" floodColor="#0d47a1" floodOpacity="0.26" />
           </filter>
           <filter id="jl-trail-blur" x="-12%" y="-40%" width="124%" height="180%">
             <feGaussianBlur stdDeviation="3.5" />
@@ -155,7 +155,7 @@ export function JourneyLoader() {
                   <circle className="jl-pin__pulse" cy="-15" r="7" />
                   <path
                     d="M0 0c0 0 8.5-9.4 8.5-15A8.5 8.5 0 1 0-8.5-15C-8.5-9.4 0 0 0 0Z"
-                    fill="#532f8d"
+                    fill="#1976d2"
                   />
                   <circle cy="-15" r="3.2" fill="#ffffff" />
                 </g>
@@ -178,21 +178,21 @@ export function JourneyLoader() {
       </svg>
 
       <div className="jl-content">
-        <div className="flex flex-col items-center gap-4 rounded-3xl border border-white/80 bg-white/70 px-10 py-8 text-center shadow-[0_30px_70px_-30px_rgba(48,30,78,0.55)] backdrop-blur-2xl backdrop-saturate-150">
+        <div className="flex flex-col items-center gap-4 rounded-3xl border border-white/80 bg-white/70 px-10 py-8 text-center shadow-[0_30px_70px_-30px_rgba(13,71,161,0.55)] backdrop-blur-2xl backdrop-saturate-150">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-lavender-500 to-periwinkle-600 text-white shadow-card">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 text-white shadow-card">
               <Route className="h-5 w-5" />
             </span>
-            <span className="text-2xl font-bold tracking-tight text-lavender-900">
-              Next<span className="text-lavender-600">Tour</span>
+            <span className="text-2xl font-bold tracking-tight text-brand-900">
+              Next<span className="text-brand-600">Tour</span>
             </span>
           </div>
 
-          <p className="text-sm font-medium text-lavender-800">Preparing your journey...</p>
+          <p className="text-sm font-medium text-brand-800">Preparing your journey...</p>
 
           <div className="flex items-center gap-2" aria-hidden>
             {[0, 1, 2].map((dot) => (
-              <span key={dot} className="jl-dot h-2 w-2 rounded-full bg-lavender-600" />
+              <span key={dot} className="jl-dot h-2 w-2 rounded-full bg-brand-600" />
             ))}
           </div>
         </div>

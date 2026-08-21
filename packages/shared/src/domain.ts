@@ -107,6 +107,23 @@ export interface RouteOption {
   label: "CHEAPEST" | "FASTEST" | "BALANCED" | "COMFORTABLE" | "ALTERNATIVE";
 }
 
+/**
+ * A photo of a real place, as returned by Google Places API (New).
+ *
+ * `name` is the photo resource name, not a URL — the media bytes live behind an
+ * API-key'd endpoint, so the browser asks the API to resolve it instead
+ * (`GET /api/places/photo?name=...`). Google's terms require the author
+ * attribution be shown alongside the image, so it travels with the reference.
+ */
+export interface PlacePhoto {
+  /** `places/{placeId}/photos/{photoReference}` */
+  name: string;
+  attribution?: string;
+  attributionUri?: string;
+  widthPx?: number;
+  heightPx?: number;
+}
+
 export interface Place {
   id: string;
   type: PlaceType;
@@ -119,6 +136,8 @@ export interface Place {
   priceLevel?: "BUDGET" | "MID_RANGE" | "PREMIUM";
   estimatedCost?: number;
   source: "REAL";
+  /** Empty when Google has no photos for the place. */
+  photos?: PlacePhoto[];
 }
 
 export interface Hotel extends Place {

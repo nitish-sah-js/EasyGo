@@ -41,7 +41,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             this.setState({ error: null });
             window.location.href = "/";
           }}
-          className="rounded-xl bg-lavender-700 px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:bg-lavender-800"
+          className="rounded-xl bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:bg-brand-800"
         >
           Back to home
         </button>

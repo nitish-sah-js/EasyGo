@@ -12,6 +12,15 @@ const museum: GooglePlace = {
   priceLevel: "PRICE_LEVEL_INEXPENSIVE",
   types: ["museum", "tourist_attraction"],
   primaryType: "museum",
+  photos: [
+    {
+      name: "places/place-museum-1/photos/photo-ref-one",
+      widthPx: 3000,
+      heightPx: 2000,
+      authorAttributions: [{ displayName: "A. Photographer", uri: "https://maps.google.com/contrib/1" }],
+    },
+    { name: "places/place-museum-1/photos/photo-ref-two" },
+  ],
 };
 
 const restaurant: GooglePlace = {
@@ -89,5 +98,33 @@ describe("toHotel", () => {
     expect(result.priceLevel).toBe("PREMIUM");
     expect(result.pricePerNight).toBe(8_500);
     expect(result.distanceFromCenterKm).toBeGreaterThan(0);
+  });
+});
+
+describe("photo mapping", () => {
+  it("carries the photo reference and its author attribution", () => {
+    const attraction = toAttraction(museum, "Goa", 0);
+    expect(attraction.photos?.[0]).toEqual({
+      name: "places/place-museum-1/photos/photo-ref-one",
+      attribution: "A. Photographer",
+      attributionUri: "https://maps.google.com/contrib/1",
+      widthPx: 3000,
+      heightPx: 2000,
+    });
+  });
+
+  it("keeps photos without an attribution rather than dropping them", () => {
+    const attraction = toAttraction(museum, "Goa", 0);
+    expect(attraction.photos?.[1]).toEqual({ name: "places/place-museum-1/photos/photo-ref-two" });
+  });
+
+  it("skips photo entries Google returned without a resource name", () => {
+    const attraction = toAttraction({ ...museum, photos: [{ widthPx: 100 }] }, "Goa", 0);
+    expect(attraction.photos).toEqual([]);
+  });
+
+  it("gives an empty list when the place has no photos", () => {
+    const attraction = toAttraction(restaurant, "Goa", 0);
+    expect(attraction.photos).toEqual([]);
   });
 });

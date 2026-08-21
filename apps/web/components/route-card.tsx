@@ -11,16 +11,16 @@ const modeIcon: Record<TransportMode, typeof Plane> = {
 };
 
 const modeTone: Record<TransportMode, IconTone> = {
-  FLIGHT: "periwinkle",
-  TRAIN: "lavender",
-  BUS: "orchid",
+  FLIGHT: "mid",
+  TRAIN: "base",
+  BUS: "deep",
 };
 
 const labelTone: Record<RouteOption["label"], ChipTone> = {
-  CHEAPEST: "mint",
-  FASTEST: "sky",
-  BALANCED: "lavender",
-  COMFORTABLE: "orchid",
+  CHEAPEST: "success",
+  FASTEST: "soft",
+  BALANCED: "base",
+  COMFORTABLE: "deep",
   ALTERNATIVE: "neutral",
 };
 
@@ -46,11 +46,11 @@ export function RouteCard({ route, recommended = false }: { route: RouteOption; 
     <article
       className={cn(
         "overflow-hidden rounded-2xl border bg-surface shadow-card transition hover:shadow-lift",
-        recommended ? "border-lavender-300 ring-1 ring-lavender-200" : "border-border",
+        recommended ? "border-brand-300 ring-1 ring-brand-200" : "border-border",
       )}
     >
       {recommended ? (
-        <div className="flex items-center gap-2 bg-gradient-to-r from-lavender-700 to-periwinkle-700 px-5 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white">
+        <div className="flex items-center gap-2 bg-gradient-to-r from-brand-700 to-brand-700 px-5 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white">
           <Sparkles className="h-3.5 w-3.5" />
           Recommended route
         </div>
@@ -94,7 +94,7 @@ export function RouteCard({ route, recommended = false }: { route: RouteOption; 
         </div>
 
         {route.recommendationReason ? (
-          <p className="mt-4 rounded-xl bg-lavender-50 px-4 py-3 text-sm leading-6 text-lavender-800">
+          <p className="mt-4 rounded-xl bg-brand-50 px-4 py-3 text-sm leading-6 text-brand-800">
             {route.recommendationReason}
           </p>
         ) : null}
@@ -105,7 +105,7 @@ export function RouteCard({ route, recommended = false }: { route: RouteOption; 
             return (
               <div
                 key={segment.id}
-                className="grid gap-3 rounded-xl bg-lavender-50/70 p-3.5 sm:grid-cols-[1fr_auto] sm:items-center"
+                className="grid gap-3 rounded-xl bg-brand-50/70 p-3.5 sm:grid-cols-[1fr_auto] sm:items-center"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <IconTile tone={modeTone[segment.mode]} size="sm" className="bg-white">
@@ -127,7 +127,7 @@ export function RouteCard({ route, recommended = false }: { route: RouteOption; 
                     time={clockOf(segment.departureTime)}
                     place={segment.origin.code ?? segment.origin.city ?? segment.origin.name}
                   />
-                  <ArrowRight className="h-4 w-4 shrink-0 text-lavender-400" />
+                  <ArrowRight className="h-4 w-4 shrink-0 text-brand-400" />
                   <TimePoint
                     time={clockOf(segment.arrivalTime)}
                     place={segment.destination.code ?? segment.destination.city ?? segment.destination.name}

@@ -16,12 +16,12 @@ const rows: Array<{
   icon: typeof Plane;
   tone: IconTone;
 }> = [
-  { key: "transport", label: "Transport", icon: Plane, tone: "periwinkle" },
-  { key: "accommodation", label: "Stay", icon: Hotel, tone: "sky" },
-  { key: "food", label: "Food", icon: Utensils, tone: "peach" },
-  { key: "activities", label: "Activities", icon: Camera, tone: "orchid" },
-  { key: "localTransport", label: "Local transport", icon: Bus, tone: "lavender" },
-  { key: "miscellaneous", label: "Miscellaneous", icon: MoreHorizontal, tone: "mint" },
+  { key: "transport", label: "Transport", icon: Plane, tone: "soft" },
+  { key: "accommodation", label: "Stay", icon: Hotel, tone: "mid" },
+  { key: "food", label: "Food", icon: Utensils, tone: "base" },
+  { key: "activities", label: "Activities", icon: Camera, tone: "deep" },
+  { key: "localTransport", label: "Local transport", icon: Bus, tone: "base" },
+  { key: "miscellaneous", label: "Miscellaneous", icon: MoreHorizontal, tone: "success" },
 ];
 
 export function BudgetBreakdown({ budget }: { budget: BudgetBreakdownType }) {
@@ -33,7 +33,7 @@ export function BudgetBreakdown({ budget }: { budget: BudgetBreakdownType }) {
       <div className="ink-panel rounded-2xl p-5 shadow-ink">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-lavender-200">
+            <div className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-brand-200">
               Estimated total
             </div>
             <div className="mt-1 text-3xl font-bold tracking-tight text-white">
@@ -50,16 +50,16 @@ export function BudgetBreakdown({ budget }: { budget: BudgetBreakdownType }) {
             className={
               overBudget
                 ? "h-full rounded-full bg-gradient-to-r from-blush-300 to-blush-400"
-                : "h-full rounded-full bg-gradient-to-r from-aqua-200 to-mint-200"
+                : "h-full rounded-full bg-gradient-to-r from-brand-300 to-brand-100"
             }
             style={{ width: `${used}%` }}
           />
         </div>
         <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <span className="text-lavender-200">
+          <span className="text-brand-200">
             {used.toFixed(0)}% of your {formatInr(budget.userBudget)} budget
           </span>
-          <span className={overBudget ? "font-semibold text-blush-200" : "font-semibold text-mint-200"}>
+          <span className={overBudget ? "font-semibold text-blush-200" : "font-semibold text-brand-200"}>
             {overBudget ? "Over by " : "Remaining "}
             {formatInr(Math.abs(budget.remainingBudget))}
           </span>
@@ -86,9 +86,9 @@ export function BudgetBreakdown({ budget }: { budget: BudgetBreakdownType }) {
                     {formatInr(amount)}
                   </span>
                 </div>
-                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-lavender-100">
+                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-brand-100">
                   <div
-                    className="h-full rounded-full bg-lavender-300"
+                    className="h-full rounded-full bg-brand-300"
                     style={{ width: `${Math.min(100, share)}%` }}
                   />
                 </div>

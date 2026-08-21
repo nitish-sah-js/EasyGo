@@ -7,10 +7,10 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-lavender-700 text-white shadow-card hover:bg-lavender-800",
-        secondary: "border border-lavender-200 bg-surface text-lavender-800 hover:bg-lavender-50",
-        outline: "border border-lavender-300 bg-transparent text-lavender-700 hover:bg-lavender-50",
-        ghost: "text-lavender-700 hover:bg-lavender-100",
+        default: "bg-brand-700 text-white shadow-card hover:bg-brand-800",
+        secondary: "border border-brand-200 bg-surface text-brand-800 hover:bg-brand-50",
+        outline: "border border-brand-300 bg-transparent text-brand-700 hover:bg-brand-50",
+        ghost: "text-brand-700 hover:bg-brand-100",
         onInk: "bg-white/15 text-white ring-1 ring-inset ring-white/30 backdrop-blur hover:bg-white/25",
         danger: "bg-blush-600 text-white shadow-card hover:bg-blush-700",
       },

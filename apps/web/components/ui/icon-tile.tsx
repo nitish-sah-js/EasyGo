@@ -2,14 +2,12 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const tones = {
-  lavender: "bg-lavender-100 text-lavender-700",
-  periwinkle: "bg-periwinkle-100 text-periwinkle-700",
-  aqua: "bg-aqua-100 text-aqua-800",
-  mint: "bg-mint-100 text-mint-800",
-  orchid: "bg-orchid-100 text-orchid-700",
-  peach: "bg-peach-100 text-peach-700",
-  blush: "bg-blush-100 text-blush-700",
-  sky: "bg-sky-100 text-sky-800",
+  soft: "bg-brand-50 text-brand-800",
+  base: "bg-brand-100 text-brand-900",
+  mid: "bg-brand-200 text-brand-900",
+  deep: "bg-brand-700 text-white",
+  success: "bg-mint-100 text-mint-800",
+  danger: "bg-blush-100 text-blush-700",
   onInk: "bg-white/15 text-white ring-1 ring-inset ring-white/20",
 } as const;
 
@@ -26,7 +24,7 @@ const sizes = {
  * (transport rows, itinerary entries, stat cards).
  */
 export function IconTile({
-  tone = "lavender",
+  tone = "base",
   size = "default",
   className,
   ...props

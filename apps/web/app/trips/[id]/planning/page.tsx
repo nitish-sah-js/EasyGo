@@ -11,11 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
 import { statusLabel } from "@/lib/utils";
-<<<<<<< Updated upstream
-import { friendlyProviderMessage } from "@/lib/provider-messages";
-=======
 import { cn } from "@/lib/utils";
->>>>>>> Stashed changes
+import { friendlyProviderMessage } from "@/lib/provider-messages";
 import { getTripStatus, startTripPlanning } from "@/services/trips";
 
 function isTerminal(status?: PlanningStatus) {
@@ -66,16 +63,16 @@ export default function PlanningPage() {
           }
         />
 
-        <div className="mt-4 h-2 overflow-hidden rounded-full bg-lavender-100">
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-brand-100">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-lavender-500 to-aqua-400 transition-all duration-700"
+            className="h-full rounded-full bg-gradient-to-r from-brand-500 to-brand-400 transition-all duration-700"
             style={{ width: `${progress}%` }}
           />
         </div>
 
         <Card className="mt-6">
           <CardContent className="pt-6">
-            <ol className="relative space-y-1 border-l-2 border-dashed border-lavender-200 pl-7">
+            <ol className="relative space-y-1 border-l-2 border-dashed border-brand-200 pl-7">
               {data?.progress.map((step) => (
                 <li key={step.key} className="relative py-2.5">
                   <span
@@ -83,8 +80,8 @@ export default function PlanningPage() {
                       "absolute -left-[2.3rem] top-3 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white shadow-sm",
                       step.status === "COMPLETED" && "bg-mint-800 text-white",
                       step.status === "FAILED" && "bg-blush-600 text-white",
-                      step.status === "PROCESSING" && "bg-lavender-600 text-white",
-                      step.status === "PENDING" && "bg-lavender-100 text-lavender-400",
+                      step.status === "PROCESSING" && "bg-brand-600 text-white",
+                      step.status === "PENDING" && "bg-brand-100 text-brand-400",
                     )}
                   >
                     {step.status === "COMPLETED" ? (
@@ -107,11 +104,11 @@ export default function PlanningPage() {
                       {step.label}
                     </span>
                     {step.status === "FAILED" ? (
-                      <Chip tone="blush" className="text-[0.65rem]">
+                      <Chip tone="danger" className="text-[0.65rem]">
                         failed
                       </Chip>
                     ) : step.status === "PROCESSING" ? (
-                      <Chip tone="lavender" className="text-[0.65rem]">
+                      <Chip tone="base" className="text-[0.65rem]">
                         running
                       </Chip>
                     ) : null}
@@ -122,17 +119,12 @@ export default function PlanningPage() {
             </ol>
 
             {data?.providerNotes.length ? (
-<<<<<<< Updated upstream
-              <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-                Some options are temporarily unavailable. {data.providerNotes.map(friendlyProviderMessage).join(" ")}
-=======
-              <div className="mt-6 rounded-2xl border border-peach-200 bg-peach-100 p-4 text-sm text-peach-900">
+              <div className="mt-6 rounded-2xl border border-brand-200 bg-brand-100 p-4 text-sm text-brand-900">
                 <div className="flex items-center gap-2 font-semibold">
                   <AlertTriangle className="h-4 w-4" />
                   Some options are temporarily unavailable
                 </div>
-                <p className="mt-1.5">{data.providerNotes.join("; ")}</p>
->>>>>>> Stashed changes
+                <p className="mt-1.5">{data.providerNotes.map(friendlyProviderMessage).join(" ")}</p>
               </div>
             ) : null}
 

@@ -18,10 +18,10 @@ type Marker = {
 };
 
 const markerStyle: Record<MarkerType, { pin: string; icon: typeof MapPin; label: string }> = {
-  destination: { pin: "bg-lavender-700", icon: Navigation, label: "Destination" },
-  hotel: { pin: "bg-sky-700", icon: Hotel, label: "Stay" },
-  attraction: { pin: "bg-orchid-600", icon: MapPin, label: "Place" },
-  restaurant: { pin: "bg-peach-700", icon: Utensils, label: "Food" },
+  destination: { pin: "bg-brand-700", icon: Navigation, label: "Destination" },
+  hotel: { pin: "bg-brand-700", icon: Hotel, label: "Stay" },
+  attraction: { pin: "bg-brand-600", icon: MapPin, label: "Place" },
+  restaurant: { pin: "bg-brand-700", icon: Utensils, label: "Food" },
 };
 
 function markerPosition(marker: Marker, markers: Marker[]) {
@@ -56,7 +56,7 @@ export function MapVisualization({
 
   if (destinationLat === undefined || destinationLng === undefined) {
     return (
-      <div className="flex aspect-[16/11] min-h-[280px] items-center justify-center rounded-2xl border border-dashed border-lavender-200 bg-lavender-50 p-6 text-center text-sm text-muted-foreground">
+      <div className="flex aspect-[16/11] min-h-[280px] items-center justify-center rounded-2xl border border-dashed border-brand-200 bg-brand-50 p-6 text-center text-sm text-muted-foreground">
         No mapped locations yet — the hotel and place providers returned no results for this trip.
       </div>
     );
@@ -105,9 +105,9 @@ export function MapVisualization({
 
   return (
     <div className="space-y-3">
-      <div className="relative aspect-[16/11] min-h-[300px] overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-mint-100 via-aqua-50 to-periwinkle-100 shadow-card">
-        <div className="absolute inset-0 opacity-60 [background-image:linear-gradient(#cfbaf0_1px,transparent_1px),linear-gradient(90deg,#cfbaf0_1px,transparent_1px)] [background-size:40px_40px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_70%,rgba(152,245,225,0.55),transparent_45%),radial-gradient(circle_at_75%_30%,rgba(163,196,243,0.45),transparent_45%)]" />
+      <div className="relative aspect-[16/11] min-h-[300px] overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-brand-100 via-brand-50 to-brand-200 shadow-card">
+        <div className="absolute inset-0 opacity-60 [background-image:linear-gradient(#90caf9_1px,transparent_1px),linear-gradient(90deg,#90caf9_1px,transparent_1px)] [background-size:40px_40px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_70%,rgba(144,202,249,0.55),transparent_45%),radial-gradient(circle_at_75%_30%,rgba(144,202,249,0.45),transparent_45%)]" />
 
         <svg className="absolute inset-0 h-full w-full" role="presentation">
           <polyline
@@ -119,7 +119,7 @@ export function MapVisualization({
               })
               .join(" ")}
             fill="none"
-            stroke="#7b4aca"
+            stroke="#2196f3"
             strokeWidth="2"
             strokeDasharray="5 5"
             strokeLinecap="round"
@@ -140,7 +140,7 @@ export function MapVisualization({
               aria-label={`${style.label}: ${marker.label}`}
               style={markerPosition(marker, markers)}
               className={cn(
-                "absolute -translate-x-1/2 -translate-y-1/2 rounded-full p-2 text-white shadow-lift ring-2 ring-white transition hover:scale-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-lavender-300",
+                "absolute -translate-x-1/2 -translate-y-1/2 rounded-full p-2 text-white shadow-lift ring-2 ring-white transition hover:scale-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-300",
                 style.pin,
                 active && "scale-110 ring-4",
               )}
@@ -156,11 +156,11 @@ export function MapVisualization({
               type="button"
               aria-label="Close"
               onClick={() => setSelectedId(null)}
-              className="absolute right-3 top-3 rounded-full p-1 text-muted-foreground transition hover:bg-lavender-100 hover:text-lavender-700"
+              className="absolute right-3 top-3 rounded-full p-1 text-muted-foreground transition hover:bg-brand-100 hover:text-brand-700"
             >
               <X className="h-4 w-4" />
             </button>
-            <Chip tone="lavender" className="text-[0.65rem]">
+            <Chip tone="base" className="text-[0.65rem]">
               {markerStyle[selected.type].label}
             </Chip>
             <h4 className="mt-2 pr-6 text-base font-bold tracking-tight text-foreground">

@@ -67,10 +67,10 @@ export default function TripsPage() {
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {[0, 1, 2].map((item) => (
               <Card key={item} className="overflow-hidden">
-                <div className="h-36 animate-pulse bg-lavender-100" />
+                <div className="h-36 animate-pulse bg-brand-100" />
                 <CardContent className="space-y-3 pt-5">
-                  <div className="h-5 w-2/3 animate-pulse rounded bg-lavender-200" />
-                  <div className="h-4 w-1/2 animate-pulse rounded bg-lavender-100" />
+                  <div className="h-5 w-2/3 animate-pulse rounded bg-brand-200" />
+                  <div className="h-4 w-1/2 animate-pulse rounded bg-brand-100" />
                 </CardContent>
               </Card>
             ))}
@@ -138,7 +138,7 @@ export default function TripsPage() {
         {data?.trips.length === 0 ? (
           <Card className="border-dashed">
             <CardContent className="flex flex-col items-center gap-4 py-14 text-center">
-              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-lavender-100 text-lavender-700">
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-100 text-brand-700">
                 <Compass className="h-7 w-7" />
               </span>
               <div className="space-y-1">
@@ -165,7 +165,7 @@ function Meta({ icon, label, value }: { icon: React.ReactNode; label: string; va
   return (
     <div className="min-w-0">
       <dt className="flex items-center gap-1 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">
-        <span className="text-lavender-500">{icon}</span>
+        <span className="text-brand-500">{icon}</span>
         {label}
       </dt>
       <dd className="mt-0.5 truncate text-sm font-semibold text-foreground">{value}</dd>

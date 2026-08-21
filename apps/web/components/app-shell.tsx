@@ -48,11 +48,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-40 border-b border-border bg-surface/85 backdrop-blur-xl">
         <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-lavender-500 to-periwinkle-600 text-white shadow-card">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 text-white shadow-card">
               <Route className="h-5 w-5" />
             </span>
             <span className="text-lg font-bold tracking-tight text-foreground">
-              Next<span className="text-lavender-600">Tour</span>
+              Next<span className="text-brand-600">Tour</span>
             </span>
           </Link>
 
@@ -66,12 +66,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   aria-current={active ? "page" : undefined}
                   className={cn(
                     "relative px-4 py-2 text-sm font-semibold transition",
-                    active ? "text-lavender-700" : "text-muted-foreground hover:text-lavender-700",
+                    active ? "text-brand-700" : "text-muted-foreground hover:text-brand-700",
                   )}
                 >
                   {link.label}
                   {active ? (
-                    <span className="absolute inset-x-4 -bottom-0.5 h-0.5 rounded-full bg-lavender-600" />
+                    <span className="absolute inset-x-4 -bottom-0.5 h-0.5 rounded-full bg-brand-600" />
                   ) : null}
                 </Link>
               );
@@ -84,7 +84,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <button
                   type="button"
                   aria-label="Notifications"
-                  className="hidden h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition hover:bg-lavender-100 hover:text-lavender-700 sm:flex"
+                  className="hidden h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition hover:bg-brand-100 hover:text-brand-700 sm:flex"
                 >
                   <Bell className="h-[1.15rem] w-[1.15rem]" />
                 </button>
@@ -95,7 +95,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </Link>
                 <span
                   title={user.name}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-lavender-200 to-periwinkle-200 text-sm font-bold text-lavender-800 ring-2 ring-white"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-brand-200 to-brand-200 text-sm font-bold text-brand-800 ring-2 ring-white"
                 >
                   {initialsOf(user.name)}
                 </span>

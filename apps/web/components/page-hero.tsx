@@ -28,7 +28,7 @@ export function PageHero({
       <div className="min-w-0 space-y-2">
         {eyebrow ? <div className="flex flex-wrap items-center gap-2">{eyebrow}</div> : null}
         <h1 className="text-2xl font-bold tracking-tight text-white sm:text-4xl">{title}</h1>
-        {meta ? <p className="text-sm text-lavender-200">{meta}</p> : null}
+        {meta ? <p className="text-sm text-brand-200">{meta}</p> : null}
       </div>
       {action ? <div className="flex flex-wrap items-center gap-3">{action}</div> : null}
     </div>

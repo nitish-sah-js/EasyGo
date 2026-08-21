@@ -89,7 +89,7 @@ export default function TripPage() {
               <Card>
                 <CardContent className="pt-6">
                   <StatTile
-                    tone="periwinkle"
+                    tone="soft"
                     icon={<CalendarDays className="h-5 w-5" />}
                     label="Dates"
                     value={`${formatDate(trip.departureDate)} – ${formatDate(trip.returnDate)}`}
@@ -99,7 +99,7 @@ export default function TripPage() {
               <Card>
                 <CardContent className="pt-6">
                   <StatTile
-                    tone="lavender"
+                    tone="base"
                     icon={<Users className="h-5 w-5" />}
                     label="Travelers"
                     value={`${trip.travelers} ${trip.travelers === 1 ? "traveler" : "travelers"}`}
@@ -109,7 +109,7 @@ export default function TripPage() {
               <Card>
                 <CardContent className="pt-6">
                   <StatTile
-                    tone="mint"
+                    tone="mid"
                     icon={<Wallet className="h-5 w-5" />}
                     label="Budget"
                     value={formatInr(trip.budget)}
@@ -120,7 +120,7 @@ export default function TripPage() {
               <Card>
                 <CardContent className="pt-6">
                   <StatTile
-                    tone="sky"
+                    tone="mid"
                     icon={<Hotel className="h-5 w-5" />}
                     label="Stay"
                     value={trip.preferences.accommodationPreference.replace("_", " ").toLowerCase()}
@@ -179,12 +179,12 @@ function PreferenceRow({
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
       <span className="flex min-w-[7.5rem] items-center gap-2 text-sm font-semibold text-muted-foreground">
-        <span className="text-lavender-500">{icon}</span>
+        <span className="text-brand-500">{icon}</span>
         {label}
       </span>
       <div className="flex flex-wrap gap-1.5">
         {values.map((value) => (
-          <Chip key={value} tone="lavender">
+          <Chip key={value} tone="base">
             {value.replace("_", " ").toLowerCase()}
           </Chip>
         ))}

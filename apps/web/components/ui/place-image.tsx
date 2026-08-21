@@ -1,0 +1,85 @@
+"use client";
+
+import * as React from "react";
+import { Scenic } from "@/components/ui/scenic";
+import { cn } from "@/lib/utils";
+
+/**
+ * A real photograph of a place, over a `Scenic` that stands in when there isn't one.
+ *
+ * Photos come from Google Places via the API's photo endpoint, which resolves a
+ * reference and redirects to Google's CDN. Three things can go wrong — the place
+ * has no photo, the project has no Places key, the resolved URL has expired — and
+ * all three land as a failed image load. So the illustrated scene is painted
+ * first and the photo fades in on top of it: a failure reveals the fallback that
+ * was already there instead of collapsing the card's height.
+ */
+export function PlaceImage({
+  src,
+  alt,
+  seed,
+  className,
+  scrim = false,
+  credit,
+  fallback = "scene",
+  children,
+}: {
+  /** Undefined when the place carries no photo — renders the fallback alone. */
+  src?: string | undefined;
+  alt: string;
+  /** Keeps the fallback scene stable for a given place. */
+  seed: string;
+  className?: string;
+  scrim?: boolean;
+  /** Photographer attribution, shown as a hover title where there's no room to print it. */
+  credit?: string | undefined;
+  /**
+   * What to show when there is no photo. "scene" paints the illustrated fallback,
+   * which suits a card whose layout depends on the image filling a fixed area.
+   * "none" collapses to nothing — for decorative thumbnails, where an abstract
+   * horizon next to every row would read as noise rather than as a picture.
+   */
+  fallback?: "scene" | "none";
+  children?: React.ReactNode;
+}) {
+  const [failed, setFailed] = React.useState(false);
+  const [loaded, setLoaded] = React.useState(false);
+
+  // A card can be re-pointed at another place while mounted (the destination grid
+  // re-filters in place), so the load state has to follow the src, not the mount.
+  React.useEffect(() => {
+    setFailed(false);
+    setLoaded(false);
+  }, [src]);
+
+  const showPhoto = Boolean(src) && !failed;
+  if (!showPhoto && fallback === "none") return null;
+
+  return (
+    <div className={cn("relative isolate overflow-hidden", className)}>
+      {fallback === "scene" ? <Scenic seed={seed} className="absolute inset-0 h-full w-full" /> : null}
+      {showPhoto ? (
+        // The API redirects to Google's photo CDN, whose host next/image cannot be
+        // given as a remote pattern ahead of time.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={src}
+          alt={alt}
+          {...(credit ? { title: credit } : {})}
+          loading="lazy"
+          decoding="async"
+          onLoad={() => setLoaded(true)}
+          onError={() => setFailed(true)}
+          className={cn(
+            "absolute inset-0 h-full w-full object-cover transition-opacity duration-500",
+            loaded ? "opacity-100" : "opacity-0",
+          )}
+        />
+      ) : null}
+      {scrim ? (
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-900/85 via-brand-900/30 to-brand-900/5" />
+      ) : null}
+      {children ? <div className="relative h-full">{children}</div> : null}
+    </div>
+  );
+}

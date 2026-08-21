@@ -8,7 +8,7 @@ export function StatTile({
   label,
   value,
   hint,
-  tone = "lavender",
+  tone = "base",
   className,
 }: {
   icon: React.ReactNode;

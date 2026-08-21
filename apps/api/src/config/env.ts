@@ -71,6 +71,10 @@ const envSchema = z.object({
 
   // Hotels / attractions / restaurants — Google Places API (New)
   GOOGLE_MAPS_API_KEY: z.string().optional(),
+  // Resolved photo-media URLs are short-lived on Google's side, so this stays
+  // comfortably below their expiry. Each miss is a separately billed Places
+  // Photo request, so lowering it costs money rather than saving it.
+  PLACE_PHOTO_CACHE_TTL_SECONDS: ttlSeconds(3_600),
   // How many top-ranked hotels get a real coordinate lookup. Each costs one
   // Places `searchText` call, which is metered separately from `searchNearby` and
   // is capped per-day at the project level (default 100/day). Only the first hotel

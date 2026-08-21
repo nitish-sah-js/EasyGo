@@ -1,3 +1,6 @@
+"use client";
+
+import { useMemo } from "react";
 import {
   Bus,
   Clock,
@@ -16,10 +19,13 @@ import {
   formatMinutes,
   type GeneratedItinerary,
   type ItineraryActivity,
+  type Place,
   type WeatherCondition,
 } from "@nexttour/shared";
 import { Chip } from "@/components/ui/chip";
 import { IconTile, type IconTone } from "@/components/ui/icon-tile";
+import { PlaceImage } from "@/components/ui/place-image";
+import { firstPhotoUrl, photoCredit } from "@/lib/place-images";
 
 const categoryIcon: Record<ItineraryActivity["category"], typeof MapPin> = {
   TRANSPORT: Bus,
@@ -30,11 +36,11 @@ const categoryIcon: Record<ItineraryActivity["category"], typeof MapPin> = {
 };
 
 const categoryTone: Record<ItineraryActivity["category"], IconTone> = {
-  TRANSPORT: "periwinkle",
-  HOTEL: "sky",
-  ATTRACTION: "orchid",
-  RESTAURANT: "peach",
-  FREE_TIME: "mint",
+  TRANSPORT: "mid",
+  HOTEL: "soft",
+  ATTRACTION: "deep",
+  RESTAURANT: "base",
+  FREE_TIME: "success",
 };
 
 const weatherIcon: Record<WeatherCondition, typeof Sun> = {
@@ -44,6 +50,44 @@ const weatherIcon: Record<WeatherCondition, typeof Sun> = {
   LIGHT_RAIN: CloudRain,
   HEAVY_RAIN: CloudRain,
 };
+
+function normalizeName(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+/**
+ * The itinerary is generated as prose-with-fields: an activity names its venue in
+ * `locationName` or `title`, but carries no id back to the attraction it came
+ * from. Matching on the name is what's available, and it is done strictly —
+ * exact match, or the venue name appearing whole inside the activity text — so a
+ * near-miss shows no photo rather than the wrong landmark.
+ *
+ * Short names are skipped entirely: a three-letter place name matches too much.
+ */
+const MIN_MATCHABLE_NAME = 5;
+
+function buildPhotoIndex(places: Place[]): Array<{ normalized: string; place: Place }> {
+  return places
+    .map((place) => ({ normalized: normalizeName(place.name), place }))
+    .filter((entry) => entry.normalized.length >= MIN_MATCHABLE_NAME && entry.place.photos?.length)
+    // Longest first, so "Gateway of India Museum" wins over "Gateway of India"
+    // when an activity names both.
+    .sort((left, right) => right.normalized.length - left.normalized.length);
+}
+
+function matchPlace(
+  activity: ItineraryActivity,
+  index: Array<{ normalized: string; place: Place }>,
+): Place | undefined {
+  const haystacks = [activity.locationName, activity.title]
+    .filter((value): value is string => Boolean(value))
+    .map(normalizeName);
+  if (haystacks.length === 0) return undefined;
+
+  return index.find((entry) =>
+    haystacks.some((haystack) => haystack === entry.normalized || haystack.includes(entry.normalized)),
+  )?.place;
+}
 
 function dayLabel(date: string): string {
   const parsed = new Date(`${date}T00:00:00`);
@@ -55,7 +99,16 @@ function dayLabel(date: string): string {
  * Chronological plan rendered as a rail: each day opens with a numbered marker,
  * and every activity hangs off the rail as its own card.
  */
-export function ItineraryTimeline({ itinerary }: { itinerary: GeneratedItinerary }) {
+export function ItineraryTimeline({
+  itinerary,
+  places = [],
+}: {
+  itinerary: GeneratedItinerary;
+  /** Attractions, restaurants and the hotel, so activities can show a real photo. */
+  places?: Place[];
+}) {
+  const photoIndex = useMemo(() => buildPhotoIndex(places), [places]);
+
   return (
     <div className="space-y-10">
       {itinerary.itinerary.map((day) => {
@@ -63,7 +116,7 @@ export function ItineraryTimeline({ itinerary }: { itinerary: GeneratedItinerary
         return (
           <section key={day.dayNumber} className="relative">
             <header className="flex flex-wrap items-center gap-4">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-lavender-600 to-periwinkle-700 text-sm font-bold text-white shadow-card">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-600 to-brand-700 text-sm font-bold text-white shadow-card">
                 D{day.dayNumber}
               </span>
               <div className="min-w-0 flex-1">
@@ -75,19 +128,20 @@ export function ItineraryTimeline({ itinerary }: { itinerary: GeneratedItinerary
                 ) : null}
               </div>
               {day.weather && WeatherIcon ? (
-                <Chip tone="sky">
+                <Chip tone="mid">
                   <WeatherIcon className="h-3.5 w-3.5" />
                   {day.weather.temperature}°C · {day.weather.rainProbability}% rain
                 </Chip>
               ) : null}
             </header>
 
-            <div className="relative ml-6 mt-4 space-y-3 border-l-2 border-dashed border-lavender-200 pl-8">
+            <div className="relative ml-6 mt-4 space-y-3 border-l-2 border-dashed border-brand-200 pl-8">
               {day.activities.map((activity) => {
                 const Icon = categoryIcon[activity.category];
+                const place = matchPlace(activity, photoIndex);
                 return (
                   <div key={activity.id} className="relative">
-                    <span className="absolute -left-[2.4rem] top-6 h-3 w-3 rounded-full border-2 border-white bg-lavender-500 ring-1 ring-lavender-200" />
+                    <span className="absolute -left-[2.4rem] top-6 h-3 w-3 rounded-full border-2 border-white bg-brand-500 ring-1 ring-brand-200" />
                     <article className="rounded-2xl border border-border bg-surface p-4 shadow-card transition hover:shadow-lift">
                       <div className="flex items-start gap-3.5">
                         <IconTile tone={categoryTone[activity.category]}>
@@ -95,7 +149,7 @@ export function ItineraryTimeline({ itinerary }: { itinerary: GeneratedItinerary
                         </IconTile>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-lavender-700">
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-brand-700">
                               <Clock className="h-3.5 w-3.5" />
                               {activity.time}
                             </span>
@@ -114,26 +168,34 @@ export function ItineraryTimeline({ itinerary }: { itinerary: GeneratedItinerary
                           <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-muted-foreground">
                             {activity.locationName ? (
                               <span className="inline-flex items-center gap-1.5">
-                                <MapPin className="h-3.5 w-3.5 text-orchid-600" />
+                                <MapPin className="h-3.5 w-3.5 text-brand-600" />
                                 {activity.locationName}
                               </span>
                             ) : null}
                             <span className="inline-flex items-center gap-1.5">
-                              <Clock className="h-3.5 w-3.5 text-sky-700" />
+                              <Clock className="h-3.5 w-3.5 text-brand-700" />
                               {formatMinutes(activity.durationMinutes)}
                             </span>
                             <span className="inline-flex items-center gap-1.5">
-                              <IndianRupee className="h-3.5 w-3.5 text-mint-800" />
+                              <IndianRupee className="h-3.5 w-3.5 text-brand-800" />
                               {formatInr(activity.estimatedCost)}
                             </span>
                             {activity.travelTimeMinutes ? (
                               <span className="inline-flex items-center gap-1.5">
-                                <Bus className="h-3.5 w-3.5 text-periwinkle-600" />
+                                <Bus className="h-3.5 w-3.5 text-brand-600" />
                                 {formatMinutes(activity.travelTimeMinutes)} travel
                               </span>
                             ) : null}
                           </div>
                         </div>
+                        <PlaceImage
+                          src={firstPhotoUrl(place, 400)}
+                          alt={place?.name ?? activity.title}
+                          seed={place?.name ?? activity.title}
+                          credit={photoCredit(place?.photos?.[0])}
+                          fallback="none"
+                          className="hidden h-20 w-28 shrink-0 rounded-xl sm:block"
+                        />
                       </div>
                     </article>
                   </div>
