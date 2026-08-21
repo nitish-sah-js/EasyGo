@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate, statusLabel } from "@/lib/utils";
+import { friendlyProviderMessage } from "@/lib/provider-messages";
 import { getTripResult } from "@/services/trips";
 
 function EmptyState({ children }: { children: React.ReactNode }) {
@@ -107,7 +108,7 @@ export default function TripResultPage() {
           <div className="font-medium">This plan is partial.</div>
           <ul className="mt-2 list-inside list-disc space-y-1">
             {data.providerMessages.map((message) => (
-              <li key={message}>{message}</li>
+              <li key={message}>{friendlyProviderMessage(message)}</li>
             ))}
           </ul>
         </div>

@@ -34,6 +34,15 @@ export function createApp() {
   app.use(express.json({ limit: "1mb" }));
   app.use(cookieParser());
 
+  app.use((request, response, next) => {
+    const startedAt = Date.now();
+    console.log(`[api hit] ${request.method} ${request.originalUrl}`);
+    response.on("finish", () => {
+      console.log(`[api] ${request.method} ${request.originalUrl} -> ${response.statusCode} (${Date.now() - startedAt}ms)`);
+    });
+    next();
+  });
+
   app.get("/health", (_request, response) => {
     response.json({
       status: "ok",

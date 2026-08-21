@@ -15,11 +15,34 @@ const booleanFlag = (defaultValue: "true" | "false") =>
     .default(defaultValue)
     .transform((value) => value === "true");
 
+const ttlSeconds = (defaultValue: number) =>
+  z
+    .string()
+    .optional()
+    .transform((value, context) => {
+      if (!value) return defaultValue;
+      const trimmed = value.trim();
+      const factors = trimmed.split("*").map((part) => part.trim());
+      if (factors.length === 0 || factors.some((part) => !/^\d+$/.test(part))) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Use seconds or a multiplication expression like 15*60",
+        });
+        return z.NEVER;
+      }
+      return factors.reduce((total, factor) => total * Number(factor), 1);
+    })
+    .pipe(z.number().int().min(0));
+
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   DATABASE_URL: z.string().min(1),
   DIRECT_URL: z.string().optional(),
   REDIS_URL: z.string().default("redis://localhost:6379"),
+  TRANSPORT_CACHE_TTL_SECONDS: ttlSeconds(900),
+  HOTEL_CACHE_TTL_SECONDS: ttlSeconds(1_800),
+  PLACES_CACHE_TTL_SECONDS: ttlSeconds(21_600),
+  WEATHER_CACHE_TTL_SECONDS: ttlSeconds(3_600),
   JWT_SECRET: z.string().min(8).default("change-me-local-secret"),
   AI_PROVIDER: z.enum(["TEMPLATE", "GEMINI", "GROQ", "HUGGINGFACE"]).default("GROQ"),
   API_PORT: z.coerce.number().int().positive().default(4000),

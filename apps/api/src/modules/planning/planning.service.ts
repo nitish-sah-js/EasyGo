@@ -9,6 +9,7 @@ import {
 } from "@nexttour/shared";
 import { env } from "../../config/env";
 import { toJson } from "../../lib/json";
+import { userFacingProviderMessage } from "../../lib/provider-messages";
 import { prisma } from "../../lib/prisma";
 import { createAIProvider } from "../ai/ai.service";
 import { BudgetService } from "../budget/budget.service";
@@ -81,7 +82,7 @@ async function collectProvider<T>(provider: string, task: () => Promise<T[]>): P
 function providerNotes(results: Array<ProviderResult<unknown>>): string[] {
   return results
     .filter((result) => result.status === "FAILED")
-    .map((result) => `${result.provider}: ${result.error ?? "Unavailable"}`);
+    .map((result) => userFacingProviderMessage(result.provider, result.error));
 }
 
 async function updateProgress(
@@ -261,7 +262,7 @@ export class PlanningService {
         weatherResult,
       ]);
       if (this.aiProvider.lastFallbackReason) {
-        notes.push(`AI: ${this.aiProvider.lastFallbackReason}`);
+        notes.push(userFacingProviderMessage("AI", this.aiProvider.lastFallbackReason));
       }
 
       // A provider can succeed and still return nothing (no flights on the route, no

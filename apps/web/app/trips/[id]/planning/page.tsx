@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { statusLabel } from "@/lib/utils";
+import { friendlyProviderMessage } from "@/lib/provider-messages";
 import { getTripStatus, startTripPlanning } from "@/services/trips";
 
 function isTerminal(status?: PlanningStatus) {
@@ -73,7 +74,7 @@ export default function PlanningPage() {
 
             {data?.providerNotes.length ? (
               <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-                Some options are temporarily unavailable. {data.providerNotes.join("; ")}
+                Some options are temporarily unavailable. {data.providerNotes.map(friendlyProviderMessage).join(" ")}
               </div>
             ) : null}
             {data?.error || error ? <p className="text-sm text-rose-600">{data?.error ?? error?.message}</p> : null}

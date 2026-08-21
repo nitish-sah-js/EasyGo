@@ -6,6 +6,7 @@ import {
   type TripPlanningRequest,
 } from "@nexttour/shared";
 import { env } from "../../config/env";
+import { userFacingProviderMessage } from "../../lib/provider-messages";
 import { getTransportProviders } from "./providers/transport-provider.registry";
 import { buildRouteOptions } from "./services/route-builder.service";
 import { optimizeRoutes } from "./services/route-optimizer.service";
@@ -45,7 +46,7 @@ export class TravelRouteService {
     );
     const notes = results
       .filter((result) => result.status === "FAILED")
-      .map((result) => `${result.provider}: ${result.error ?? "Unavailable"}`);
+      .map((result) => userFacingProviderMessage(result.provider, result.error));
 
     return { transportOptions, routes, notes };
   }
