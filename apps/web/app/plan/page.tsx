@@ -20,7 +20,6 @@ import { Suspense, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   ACCOMMODATION_PREFERENCES,
-  CITY_COORDINATES,
   FOOD_PREFERENCES,
   INTEREST_CATEGORIES,
   TRANSPORT_MODES,
@@ -35,6 +34,7 @@ import {
   type TripPlanningInput,
 } from "@nexttour/shared";
 import { AuthGuard } from "@/components/auth-guard";
+import { PlaceAutocompleteInput } from "@/components/place-autocomplete-input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
@@ -68,7 +68,9 @@ const transportIcon: Record<TransportMode, typeof Plane> = {
   BUS: Bus,
 };
 
-const supportedCities = Object.keys(CITY_COORDINATES);
+/** Matches `Input` so the autocomplete field is visually identical to the plain ones. */
+const planInputClass =
+  "h-12 w-full rounded-xl border border-border bg-surface px-3.5 text-sm outline-none transition placeholder:text-muted-foreground focus:border-brand-400 focus:ring-4 focus:ring-brand-100";
 
 function OptionButton({
   selected,
@@ -172,12 +174,6 @@ function PlanWizard() {
 
   return (
     <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-      <datalist id="plan-cities">
-        {supportedCities.map((city) => (
-          <option key={city} value={city} />
-        ))}
-      </datalist>
-
       <div className="mb-8 space-y-1.5">
         <Chip tone="base">
           Step {step + 1} of {steps.length}
@@ -259,10 +255,26 @@ function PlanWizard() {
             {step === 0 ? (
               <div className="grid gap-5 sm:grid-cols-2">
                 <Field label="Origin" hint="Cities the providers can resolve">
-                  <Input list="plan-cities" {...form.register("origin")} />
+                  <PlaceAutocompleteInput
+                    value={values.origin ?? ""}
+                    onChange={(next) =>
+                      form.setValue("origin", next, { shouldDirty: true, shouldValidate: true })
+                    }
+                    onSelect={() => undefined}
+                    ariaLabel="Origin"
+                    className={planInputClass}
+                  />
                 </Field>
                 <Field label="Destination">
-                  <Input list="plan-cities" {...form.register("destination")} />
+                  <PlaceAutocompleteInput
+                    value={values.destination ?? ""}
+                    onChange={(next) =>
+                      form.setValue("destination", next, { shouldDirty: true, shouldValidate: true })
+                    }
+                    onSelect={() => undefined}
+                    ariaLabel="Destination"
+                    className={planInputClass}
+                  />
                 </Field>
               </div>
             ) : null}

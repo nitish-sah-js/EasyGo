@@ -71,6 +71,10 @@ const envSchema = z.object({
 
   // Hotels / attractions / restaurants (search, address, rating) — Google Places API (New)
   GOOGLE_MAPS_API_KEY: z.string().optional(),
+  // Origin/destination autocomplete on the search form. Short-lived on purpose —
+  // it exists to absorb repeated keystrokes across visitors typing the same
+  // common prefixes, not to serve stale predictions.
+  PLACES_AUTOCOMPLETE_CACHE_TTL_SECONDS: ttlSeconds(300),
   // How many top-ranked hotels get a real coordinate lookup. Each costs one
   // Places `searchText` call, which is metered separately from `searchNearby` and
   // is capped per-day at the project level (default 100/day). Only the first hotel

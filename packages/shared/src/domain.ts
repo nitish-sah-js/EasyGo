@@ -173,6 +173,23 @@ export interface Place {
   photos?: PlacePhoto[];
 }
 
+/** What kind of result a Places Autocomplete suggestion resolves to, for icon/label choice. */
+export type PlaceSuggestionCategory = "city" | "airport" | "train_station" | "hotel" | "attraction" | "other";
+
+/**
+ * A single row from Google Places Autocomplete (New), as returned by
+ * `GET /api/places/autocomplete`. `placeId` is what downstream lookups
+ * (Place Details, geocoding) key off — `description` is what the user sees
+ * and types over.
+ */
+export interface PlaceSuggestion {
+  placeId: string;
+  description: string;
+  mainText: string;
+  secondaryText?: string;
+  category: PlaceSuggestionCategory;
+}
+
 export interface Hotel extends Place {
   type: "HOTEL";
   reviewCount: number;

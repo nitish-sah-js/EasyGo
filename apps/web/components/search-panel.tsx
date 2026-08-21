@@ -3,8 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Bus, CalendarDays, MapPin, Navigation, Plane, Search, Train, Users } from "lucide-react";
-import { CITY_COORDINATES, type TrainClassCode, type TransportMode } from "@nexttour/shared";
+import type { PlaceSuggestion, TrainClassCode, TransportMode } from "@nexttour/shared";
 import { Button } from "@/components/ui/button";
+import { PlaceAutocompleteInput } from "@/components/place-autocomplete-input";
 import { TrainClassPreferencePicker } from "@/components/train-class-picker";
 import { TRAIN_CLASS_PREFERENCE_KEY } from "@/lib/train-class-preference";
 import { cn } from "@/lib/utils";
@@ -14,8 +15,6 @@ const tabs: Array<{ mode: TransportMode; label: string; icon: typeof Plane }> = 
   { mode: "TRAIN", label: "Train", icon: Train },
   { mode: "BUS", label: "Bus", icon: Bus },
 ];
-
-const supportedCities = Object.keys(CITY_COORDINATES);
 
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
@@ -30,7 +29,9 @@ export function SearchPanel() {
   const router = useRouter();
   const [mode, setMode] = useState<TransportMode>("FLIGHT");
   const [origin, setOrigin] = useState("");
+  const [originPlace, setOriginPlace] = useState<PlaceSuggestion | null>(null);
   const [destination, setDestination] = useState("");
+  const [destinationPlace, setDestinationPlace] = useState<PlaceSuggestion | null>(null);
   const [departureDate, setDepartureDate] = useState("");
   const [travelers, setTravelers] = useState("2");
   const [trainClass, setTrainClass] = useState<TrainClassCode | undefined>(undefined);
@@ -44,7 +45,9 @@ export function SearchPanel() {
     }
     const params = new URLSearchParams({ transport: mode, travelers });
     if (origin.trim()) params.set("origin", origin.trim());
+    if (originPlace) params.set("originPlaceId", originPlace.placeId);
     if (destination.trim()) params.set("destination", destination.trim());
+    if (destinationPlace) params.set("destinationPlaceId", destinationPlace.placeId);
     if (departureDate) params.set("departureDate", departureDate);
     router.push(`/plan?${params.toString()}`);
   }
@@ -54,12 +57,6 @@ export function SearchPanel() {
       onSubmit={submit}
       className="rounded-2xl border border-border bg-surface/95 p-2 shadow-panel backdrop-blur-xl sm:p-3"
     >
-      <datalist id="supported-cities">
-        {supportedCities.map((city) => (
-          <option key={city} value={city} />
-        ))}
-      </datalist>
-
       <div className="flex gap-1 border-b border-border px-2 pb-1 pt-1">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -88,22 +85,22 @@ export function SearchPanel() {
 
       <div className="grid gap-3 p-3 lg:grid-cols-[1fr_1fr_1fr_0.8fr_auto] lg:items-end">
         <PanelField label="From" icon={<MapPin className="h-4 w-4" />}>
-          <input
-            list="supported-cities"
+          <PlaceAutocompleteInput
             value={origin}
-            onChange={(event) => setOrigin(event.target.value)}
+            onChange={setOrigin}
+            onSelect={setOriginPlace}
             placeholder="Origin"
-            aria-label="Origin"
+            ariaLabel="Origin"
             className="w-full bg-transparent text-sm font-medium outline-none placeholder:font-normal placeholder:text-muted-foreground"
           />
         </PanelField>
         <PanelField label="To" icon={<Navigation className="h-4 w-4" />}>
-          <input
-            list="supported-cities"
+          <PlaceAutocompleteInput
             value={destination}
-            onChange={(event) => setDestination(event.target.value)}
+            onChange={setDestination}
+            onSelect={setDestinationPlace}
             placeholder="Destination"
-            aria-label="Destination"
+            ariaLabel="Destination"
             className="w-full bg-transparent text-sm font-medium outline-none placeholder:font-normal placeholder:text-muted-foreground"
           />
         </PanelField>

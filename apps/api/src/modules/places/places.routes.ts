@@ -3,6 +3,7 @@ import { z } from "zod";
 import { ACCOMMODATION_PREFERENCES, FOOD_PREFERENCES, TRAVEL_STYLES, type INTEREST_CATEGORIES } from "@nexttour/shared";
 import { requireAuth } from "../../middleware/auth";
 import { ApiError, asyncHandler } from "../../middleware/errors";
+import { autocompletePlaces } from "./places-autocomplete.service";
 import { searchAttractions, searchHotels, searchRestaurants, type PlaceSearchOptions } from "./places.service";
 import { getCityPhoto, isPhotoName, resolvePhotoUri } from "./places-photos.service";
 
@@ -87,6 +88,25 @@ placesRoutes.get(
     }
     const { w } = photoQuerySchema.parse(request.query);
     sendPhotoRedirect(response, await resolvePhotoUri(photo.name, w ?? 1_200));
+  }),
+);
+
+const autocompleteQuerySchema = z.object({
+  input: z.string().trim().min(1).max(200),
+  sessionToken: z.string().trim().min(1).max(100).optional(),
+});
+
+/**
+ * Sits above `requireAuth` for the same reason the photo routes do: the
+ * origin/destination search form renders on the public landing page, before
+ * login. Abuse is bounded by the app-wide rate limiter and this endpoint's
+ * own short response cache (see places-autocomplete.service.ts).
+ */
+placesRoutes.get(
+  "/autocomplete",
+  asyncHandler(async (request, response) => {
+    const parsed = autocompleteQuerySchema.parse(request.query);
+    response.json({ suggestions: await autocompletePlaces(parsed.input, parsed.sessionToken) });
   }),
 );
 

@@ -14,6 +14,13 @@ const FIELD_MASK = [
   "places.types",
   "places.primaryType",
 ].join(",");
+const AUTOCOMPLETE_FIELD_MASK = [
+  "suggestions.placePrediction.place",
+  "suggestions.placePrediction.placeId",
+  "suggestions.placePrediction.text",
+  "suggestions.placePrediction.structuredFormat",
+  "suggestions.placePrediction.types",
+].join(",");
 
 export class GooglePlacesClientError extends Error {
   readonly status?: number;
@@ -38,6 +45,19 @@ export interface GooglePlace {
   regularOpeningHours?: { weekdayDescriptions?: string[] };
   types?: string[];
   primaryType?: string;
+}
+
+export interface GooglePlaceAutocompleteSuggestion {
+  placePrediction?: {
+    place?: string;
+    placeId?: string;
+    text?: { text?: string };
+    structuredFormat?: {
+      mainText?: { text?: string };
+      secondaryText?: { text?: string };
+    };
+    types?: string[];
+  };
 }
 
 export class GooglePlacesClient {
@@ -73,18 +93,31 @@ export class GooglePlacesClient {
     });
   }
 
-  private async post(path: string, body: unknown): Promise<{ places?: GooglePlace[] }> {
+  async autocomplete(input: string, sessionToken?: string): Promise<{ suggestions?: GooglePlaceAutocompleteSuggestion[] }> {
+    // The rest of the app is India-only (every default city/country fallback
+    // elsewhere assumes India), so a short prefix like "go" should surface Goa
+    // first rather than Gothenburg.
+    const body: Record<string, unknown> = { input, languageCode: "en", includedRegionCodes: ["in"] };
+    if (sessionToken) body.sessionToken = sessionToken;
+    return this.post<{ suggestions?: GooglePlaceAutocompleteSuggestion[] }>(
+      "places:autocomplete",
+      body,
+      AUTOCOMPLETE_FIELD_MASK,
+    );
+  }
+
+  private async post<T>(path: string, body: unknown, fieldMask: string = FIELD_MASK): Promise<T> {
     if (!this.apiKey) {
       throw new GooglePlacesClientError("Missing GOOGLE_MAPS_API_KEY.");
     }
 
-    return retry(() => this.postOnce(path, body), {
+    return retry(() => this.postOnce<T>(path, body, fieldMask), {
       label: `Google Places ${path}`,
       isRetryable: isTransientHttpError,
     });
   }
 
-  private async postOnce(path: string, body: unknown): Promise<{ places?: GooglePlace[] }> {
+  private async postOnce<T>(path: string, body: unknown, fieldMask: string): Promise<T> {
     let response: Response;
     try {
       response = await fetch(`${this.baseUrl}/${path}`, {
@@ -92,7 +125,7 @@ export class GooglePlacesClient {
         headers: {
           "Content-Type": "application/json",
           "X-Goog-Api-Key": this.apiKey as string,
-          "X-Goog-FieldMask": FIELD_MASK,
+          "X-Goog-FieldMask": fieldMask,
         },
         body: JSON.stringify(body),
         signal: AbortSignal.timeout(env.EXTERNAL_API_TIMEOUT_MS),
@@ -104,7 +137,7 @@ export class GooglePlacesClient {
       throw new GooglePlacesClientError(`Google Places request failed: ${(error as Error).message}`);
     }
 
-    return this.parseBody(response) as Promise<{ places?: GooglePlace[] }>;
+    return this.parseBody(response) as Promise<T>;
   }
 
   private async parseBody(response: Response): Promise<unknown> {
