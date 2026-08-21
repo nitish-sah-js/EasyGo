@@ -2,12 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Bus, CalendarDays, MapPin, Navigation, Plane, Search, Train, Users } from "lucide-react";
 import type { PlaceSuggestion, TrainClassCode, TransportMode } from "@nexttour/shared";
 import { Button } from "@/components/ui/button";
 import { PlaceAutocompleteInput } from "@/components/place-autocomplete-input";
 import { TrainClassPreferencePicker } from "@/components/train-class-picker";
 import { TRAIN_CLASS_PREFERENCE_KEY } from "@/lib/train-class-preference";
+import { collapse } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 const tabs: Array<{ mode: TransportMode; label: string; icon: typeof Plane }> = [
@@ -76,7 +78,11 @@ export function SearchPanel() {
               <Icon className="h-[1.05rem] w-[1.05rem] shrink-0" />
               {tab.label}
               {active ? (
-                <span className="absolute inset-x-2 -bottom-1 h-0.5 rounded-full bg-brand-600" />
+                <motion.span
+                  layoutId="search-tab-active"
+                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                  className="absolute inset-x-2 -bottom-1 h-0.5 rounded-full bg-brand-600"
+                />
               ) : null}
             </button>
           );
@@ -134,11 +140,22 @@ export function SearchPanel() {
         </Button>
       </div>
 
-      {mode === "TRAIN" ? (
-        <div className="border-t border-border px-3 pb-3 pt-3">
-          <TrainClassPreferencePicker value={trainClass} onChange={setTrainClass} />
-        </div>
-      ) : null}
+      <AnimatePresence initial={false}>
+        {mode === "TRAIN" ? (
+          <motion.div
+            key="train-class"
+            variants={collapse}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="overflow-hidden border-t border-border"
+          >
+            <div className="px-3 pb-3 pt-3">
+              <TrainClassPreferencePicker value={trainClass} onChange={setTrainClass} />
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </form>
   );
 }

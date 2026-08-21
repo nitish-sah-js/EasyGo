@@ -41,14 +41,16 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-accent-500 text-white shadow-card hover:bg-accent-600 hover:shadow-lift",
-        secondary:
-          "border border-brand-200 bg-surface text-brand-800 shadow-sm hover:border-brand-300 hover:bg-brand-50 hover:shadow-card",
+        // Primary Orange gradient — the one action a screen exists for
+        // (Start Planning, Plan My Trip, Search, Book Now, Confirm...).
+        default: "bg-primary-orange text-white shadow-card hover:bg-warm-orange hover:shadow-glow",
+        // Vibrant Purple gradient fill — brand-forward supporting actions.
+        secondary: "bg-vibrant-purple text-white shadow-sm hover:shadow-card hover:brightness-110",
         outline:
           "border border-brand-300 bg-transparent text-brand-700 hover:border-brand-400 hover:bg-brand-50 hover:shadow-card",
         ghost: "text-brand-700 hover:bg-brand-100",
-        /** Filled white — the primary action when it sits on an ink panel or hero photo. */
-        onInkSolid: "bg-white text-brand-800 shadow-ink hover:bg-brand-50 hover:shadow-lift",
+        /** Primary Orange gradient — the primary CTA when it sits on an ink panel or hero photo. */
+        onInkSolid: "bg-primary-orange text-white shadow-ink hover:bg-warm-orange hover:shadow-glow",
         /** Translucent — the *supporting* action in those same dark contexts. */
         onInk:
           "bg-white/15 text-white ring-1 ring-inset ring-white/30 backdrop-blur hover:bg-white/25 hover:ring-white/40",

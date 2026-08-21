@@ -2,12 +2,22 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, MapPin } from "lucide-react";
 import { Chip, FilterChip } from "@/components/ui/chip";
 import { PlaceImage } from "@/components/ui/place-image";
 import { cityPhotoUrl } from "@/lib/place-images";
 import { destinationFilters, destinations, type Destination } from "@/lib/destinations";
+import { Reveal } from "@/components/motion/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
+
+const cardMotion = {
+  layout: true as const,
+  initial: { opacity: 0, y: 16, scale: 0.97 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, scale: 0.94, transition: { duration: 0.18 } },
+  transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const },
+};
 
 function planHref(city: string): string {
   return `/plan?destination=${encodeURIComponent(city)}`;
@@ -96,27 +106,37 @@ export function DestinationGrid() {
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <SectionHeading
-        title="Explore Popular Destinations"
-        subtitle="Every city here resolves against live transport, stay and place providers."
-        action={destinationFilters.map((filter) => (
-          <FilterChip
-            key={filter.label}
-            active={activeFilter === filter.label}
-            onClick={() => setActiveFilter(filter.label)}
-          >
-            {filter.label}
-          </FilterChip>
-        ))}
-      />
+      <Reveal>
+        <SectionHeading
+          title="Explore Popular Destinations"
+          subtitle="Every city here resolves against live transport, stay and place providers."
+          action={destinationFilters.map((filter) => (
+            <FilterChip
+              key={filter.label}
+              active={activeFilter === filter.label}
+              onClick={() => setActiveFilter(filter.label)}
+            >
+              {filter.label}
+            </FilterChip>
+          ))}
+        />
+      </Reveal>
 
       {featured ? (
         <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
-          <FeaturedCard destination={featured} />
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.div key={featured.city} {...cardMotion}>
+              <FeaturedCard destination={featured} />
+            </motion.div>
+          </AnimatePresence>
           <div className="grid gap-4 sm:grid-cols-2">
-            {rest.slice(0, 4).map((destination) => (
-              <CompactCard key={destination.city} destination={destination} />
-            ))}
+            <AnimatePresence mode="popLayout" initial={false}>
+              {rest.slice(0, 4).map((destination) => (
+                <motion.div key={destination.city} {...cardMotion}>
+                  <CompactCard destination={destination} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </div>
       ) : (
@@ -125,9 +145,13 @@ export function DestinationGrid() {
 
       {rest.length > 4 ? (
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {rest.slice(4).map((destination) => (
-            <CompactCard key={destination.city} destination={destination} />
-          ))}
+          <AnimatePresence mode="popLayout" initial={false}>
+            {rest.slice(4).map((destination) => (
+              <motion.div key={destination.city} {...cardMotion}>
+                <CompactCard destination={destination} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       ) : null}
 

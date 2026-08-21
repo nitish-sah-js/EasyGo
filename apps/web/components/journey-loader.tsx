@@ -110,11 +110,11 @@ export function JourneyLoader() {
       >
         <defs>
           <linearGradient id="jl-plane-gradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#0FA0BE" />
-            <stop offset="100%" stopColor="#0B4E6A" />
+            <stop offset="0%" stopColor="#FF9100" />
+            <stop offset="100%" stopColor="#FF6D00" />
           </linearGradient>
           <filter id="jl-plane-shadow" x="-60%" y="-60%" width="220%" height="220%">
-            <feDropShadow dx="0" dy="5" stdDeviation="5" floodColor="#0B1F33" floodOpacity="0.26" />
+            <feDropShadow dx="0" dy="5" stdDeviation="5" floodColor="#240046" floodOpacity="0.35" />
           </filter>
           <filter id="jl-trail-blur" x="-12%" y="-40%" width="124%" height="180%">
             <feGaussianBlur stdDeviation="3.5" />
@@ -155,7 +155,7 @@ export function JourneyLoader() {
                   <circle className="jl-pin__pulse" cy="-15" r="7" />
                   <path
                     d="M0 0c0 0 8.5-9.4 8.5-15A8.5 8.5 0 1 0-8.5-15C-8.5-9.4 0 0 0 0Z"
-                    fill="#087EA4"
+                    fill="#9D4EDD"
                   />
                   <circle cy="-15" r="3.2" fill="#ffffff" />
                 </g>
@@ -178,7 +178,7 @@ export function JourneyLoader() {
       </svg>
 
       <div className="jl-content">
-        <div className="flex flex-col items-center gap-4 rounded-3xl border border-white/80 bg-white/70 px-10 py-8 text-center shadow-[0_30px_70px_-30px_rgba(11,31,51,0.55)] backdrop-blur-2xl backdrop-saturate-150">
+        <div className="flex flex-col items-center gap-4 rounded-3xl border border-white/80 bg-white/70 px-10 py-8 text-center shadow-[0_30px_70px_-30px_rgba(36,0,70,0.55)] backdrop-blur-2xl backdrop-saturate-150">
           <div className="flex items-center gap-3">
             <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 text-white shadow-card">
               <Route className="h-5 w-5" />

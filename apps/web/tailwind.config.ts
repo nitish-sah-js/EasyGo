@@ -1,20 +1,24 @@
 import type { Config } from "tailwindcss";
 
-// Night-map teal is the whole brand palette. The site is deliberately monochrome:
-// differentiation between surfaces, tiles and cards comes from the *step* of the
-// ramp, never from a second hue, so the only colours that ever compete with it
-// are the two status hues below and `accent` (the "active destination" orange).
+// Purple is brand / structure / identity. The site is deliberately monochrome
+// within this ramp — surfaces, tiles and cards differentiate by *step*, never
+// by a second hue — so the only colours that ever compete with it are the two
+// status hues below and `accent` (orange: action / attention / travel).
+// Anchored on the five named purples from the brand spec: 240046 (Primary
+// Purple / Deep Hero start), 3C096C (Purple Glow start / Deep Hero mid),
+// 5A189A (Primary Purple end / Vibrant Purple start), 7B2CBF (Vibrant Purple
+// end), 9D4EDD (Purple Glow end — 3D glow, markers, floating elements).
 const brand = {
-  50: "#EAFBFD", 100: "#CFF3F8", 200: "#9FE6F0", 300: "#5DD6E8", 400: "#34C7DE",
-  500: "#16B8D4", 600: "#0FA0BE", 700: "#087EA4", 800: "#0B4E6A", 900: "#0B1F33",
+  50: "#F3F0FA", 100: "#EDE7F6", 200: "#D8CFE3", 300: "#C9A9E9", 400: "#9D4EDD",
+  500: "#7B2CBF", 600: "#5A189A", 700: "#3C096C", 800: "#2D0752", 900: "#240046",
 };
 
-// The active/CTA accent — the one colour in the palette that is meant to compete
-// with the brand ramp on purpose, for the thing the user should act on right now
-// (a selected marker, a primary call to action).
+// The active/CTA accent — action and attention, never brand structure.
+// Anchored on Primary Orange (FF6D00 → FF9100) and Warm Orange/hover
+// (FF7900 → FF9E00).
 const accent = {
-  50: "#FFF3EA", 100: "#FFE0C7", 200: "#FFC79A", 300: "#FFAD6D", 400: "#FF9B54",
-  500: "#FF8A3D", 600: "#F2761F", 700: "#D9620F", 800: "#B34F0C", 900: "#7A360A",
+  50: "#FFF4E5", 100: "#FFE3C2", 200: "#FFC98A", 300: "#FFAD52", 400: "#FF9E00",
+  500: "#FF9100", 600: "#FF7900", 700: "#FF6D00", 800: "#D65900", 900: "#A34400",
 };
 
 // The two exceptions. Error and success states carry meaning that a blue cannot
@@ -53,14 +57,28 @@ const config: Config = {
         },
       },
       boxShadow: {
-        panel: "0 18px 60px rgba(11, 31, 51, 0.14)",
-        card: "0 1px 2px rgba(11, 31, 51, 0.05), 0 10px 30px -16px rgba(11, 31, 51, 0.22)",
-        lift: "0 24px 48px -24px rgba(11, 31, 51, 0.4)",
-        ink: "0 24px 60px -28px rgba(11, 31, 51, 0.65)",
-        sm: "0 1px 2px rgba(11, 31, 51, 0.07)",
+        panel: "0 18px 60px rgba(36, 0, 70, 0.14)",
+        card: "0 1px 2px rgba(36, 0, 70, 0.05), 0 10px 30px -16px rgba(36, 0, 70, 0.22)",
+        lift: "0 24px 48px -24px rgba(36, 0, 70, 0.4)",
+        ink: "0 24px 60px -28px rgba(36, 0, 70, 0.65)",
+        sm: "0 1px 2px rgba(36, 0, 70, 0.07)",
+        // Warm glow for orange CTAs — a plain dark shadow reads as an error
+        // state under a bright orange gradient, so it gets its own tint.
+        glow: "0 12px 32px -10px rgba(255, 109, 0, 0.45)",
       },
       borderRadius: {
         "4xl": "2rem",
+      },
+      // The named gradients from the brand spec, exposed as `bg-{name}` utilities.
+      backgroundImage: {
+        "primary-purple": "linear-gradient(135deg, #240046, #5A189A)",
+        "purple-glow": "linear-gradient(135deg, #3C096C, #9D4EDD)",
+        "vibrant-purple": "linear-gradient(135deg, #5A189A, #7B2CBF)",
+        "primary-orange": "linear-gradient(135deg, #FF6D00, #FF9100)",
+        "warm-orange": "linear-gradient(135deg, #FF7900, #FF9E00)",
+        "brand-gradient": "linear-gradient(135deg, #5A189A, #FF7900)",
+        "hero-gradient": "linear-gradient(160deg, #240046 0%, #3C096C 55%, #5A189A 100%)",
+        "subtle-purple": "linear-gradient(135deg, #F3F0FA, #EDE7F6)",
       },
       keyframes: {
         "fade-up": {

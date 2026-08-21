@@ -78,7 +78,11 @@ export function PlaceImage({
           onLoad={() => setLoaded(true)}
           onError={() => setFailed(true)}
           className={cn(
-            "absolute inset-0 h-full w-full object-cover transition-opacity duration-500",
+            "absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-500 ease-out",
+            // Zooms only when an ancestor opts in with `.group` — cards that
+            // want the hover effect just need the Tailwind `group` class;
+            // everything else (thumbnails with no hover affordance) is unaffected.
+            "group-hover:scale-105 motion-reduce:transition-opacity motion-reduce:group-hover:scale-100",
             loaded ? "opacity-100" : "opacity-0",
           )}
         />

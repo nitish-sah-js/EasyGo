@@ -17,14 +17,14 @@ import { cn } from "@/lib/utils";
  * a grid of eight cards from reading as eight copies of one card.
  */
 const scenes = [
-  { sky: "from-brand-50 via-brand-100 to-brand-200", sun: "bg-white", hills: ["#5DD6E8", "#087EA4"] },
-  { sky: "from-brand-100 via-brand-200 to-brand-300", sun: "bg-brand-50", hills: ["#34C7DE", "#0B4E6A"] },
-  { sky: "from-brand-200 via-brand-300 to-brand-400", sun: "bg-white", hills: ["#16B8D4", "#0B1F33"] },
-  { sky: "from-brand-50 via-brand-200 to-brand-400", sun: "bg-brand-50", hills: ["#0FA0BE", "#0B1F33"] },
-  { sky: "from-brand-100 via-brand-300 to-brand-500", sun: "bg-white", hills: ["#087EA4", "#0B1F33"] },
-  { sky: "from-brand-200 via-brand-100 to-brand-300", sun: "bg-brand-50", hills: ["#5DD6E8", "#0B4E6A"] },
-  { sky: "from-brand-300 via-brand-400 to-brand-600", sun: "bg-brand-100", hills: ["#0B4E6A", "#0B1F33"] },
-  { sky: "from-brand-50 via-brand-300 to-brand-500", sun: "bg-white", hills: ["#16B8D4", "#0B4E6A"] },
+  { sky: "from-brand-50 via-brand-100 to-brand-200", sun: "bg-white", hills: ["#C9A9E9", "#3C096C"] },
+  { sky: "from-brand-100 via-brand-200 to-brand-300", sun: "bg-brand-50", hills: ["#9D4EDD", "#2D0752"] },
+  { sky: "from-brand-200 via-brand-300 to-brand-400", sun: "bg-white", hills: ["#7B2CBF", "#240046"] },
+  { sky: "from-brand-50 via-brand-200 to-brand-400", sun: "bg-brand-50", hills: ["#5A189A", "#240046"] },
+  { sky: "from-brand-100 via-brand-300 to-brand-500", sun: "bg-white", hills: ["#3C096C", "#240046"] },
+  { sky: "from-brand-200 via-brand-100 to-brand-300", sun: "bg-brand-50", hills: ["#C9A9E9", "#2D0752"] },
+  { sky: "from-brand-300 via-brand-400 to-brand-600", sun: "bg-brand-100", hills: ["#2D0752", "#240046"] },
+  { sky: "from-brand-50 via-brand-300 to-brand-500", sun: "bg-white", hills: ["#7B2CBF", "#2D0752"] },
 ] as const;
 
 export function Scenic({

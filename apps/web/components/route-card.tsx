@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { ArrowRight, Bus, Clock, Plane, Repeat, Sparkles, Train } from "lucide-react";
 import { formatInr, formatMinutes, type RouteOption, type TrainClassCode, type TransportMode } from "@nexttour/shared";
 import { Chip, type ChipTone } from "@/components/ui/chip";
@@ -73,9 +74,12 @@ export function RouteCard({ route, recommended = false }: { route: RouteOption; 
   }, []);
 
   return (
-    <article
+    <motion.article
+      layout="position"
+      whileHover={{ y: -3 }}
+      transition={{ type: "spring", stiffness: 380, damping: 32 }}
       className={cn(
-        "overflow-hidden rounded-2xl border bg-surface shadow-card transition hover:shadow-lift",
+        "overflow-hidden rounded-2xl border bg-surface shadow-card transition-shadow hover:shadow-lift",
         recommended ? "border-brand-300 ring-1 ring-brand-200" : "border-border",
       )}
     >
@@ -193,7 +197,7 @@ export function RouteCard({ route, recommended = false }: { route: RouteOption; 
           </div>
         )}
       </div>
-    </article>
+    </motion.article>
   );
 }
 

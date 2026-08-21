@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import "./journey-loader.css";
+import "leaflet/dist/leaflet.css";
+import "./leaflet-overrides.css";
 import { AppShell } from "@/components/app-shell";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { JourneyLoader } from "@/components/journey-loader";
