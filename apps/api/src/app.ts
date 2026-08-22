@@ -36,6 +36,13 @@ function corsOrigins(): cors.CorsOptions["origin"] {
 export function createApp() {
   const app = express();
 
+  // Railway (like most PaaS) terminates TLS at an edge proxy and forwards the
+  // real client IP via X-Forwarded-For. Without this, express-rate-limit
+  // throws ERR_ERL_UNEXPECTED_X_FORWARDED_FOR on every request instead of
+  // keying its limiter off the real client IP. `1` trusts exactly one hop
+  // (the edge proxy) rather than the whole forwarded chain.
+  app.set("trust proxy", 1);
+
   app.use(helmet());
   app.use(
     cors({
