@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, ArrowRight, Check, Loader2, RefreshCw, XCircle } from "lucide-react";
@@ -43,9 +44,12 @@ export default function PlanningPage() {
   const totalCount = data?.progress.length ?? 10;
   const progress = (doneCount / totalCount) * 100;
 
-  if (data?.status === "COMPLETED" || data?.status === "PARTIAL_SUCCESS") {
-    window.setTimeout(() => router.prefetch(`/trips/${params.id}/result`), 0);
-  }
+  const status = data?.status;
+  useEffect(() => {
+    if (status === "COMPLETED" || status === "PARTIAL_SUCCESS") {
+      router.prefetch(`/trips/${params.id}/result`);
+    }
+  }, [status, params.id, router]);
 
   return (
     <AuthGuard>

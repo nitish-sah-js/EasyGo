@@ -17,7 +17,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   ACCOMMODATION_PREFERENCES,
@@ -155,6 +155,18 @@ function PlanWizard() {
 
   const values = form.watch();
   const [created, setCreated] = useState(false);
+  const redirectTimeoutRef = useRef<number | null>(null);
+
+  // If the user navigates away (e.g. presses back) inside the 700ms delay
+  // below, this timeout must not fire on whatever page they've landed on —
+  // an uncancelled `setTimeout` outlives the unmount and would force-navigate
+  // them again a moment later, regardless of where they currently are.
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current);
+    };
+  }, []);
+
   const mutation = useMutation({
     mutationFn: (payload: TripPlanningInput) =>
       apiFetch<PlanTripResponse>("/api/trips/plan", {
@@ -163,7 +175,7 @@ function PlanWizard() {
       }),
     onSuccess: (result) => {
       setCreated(true);
-      window.setTimeout(() => router.push(`/trips/${result.tripId}/planning`), 700);
+      redirectTimeoutRef.current = window.setTimeout(() => router.push(`/trips/${result.tripId}/planning`), 700);
     },
   });
 
