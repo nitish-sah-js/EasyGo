@@ -1,29 +1,16 @@
-"use client";
-
-import { AnimatePresence, motion } from "framer-motion";
-import { usePathname } from "next/navigation";
-import { easeOut } from "@/lib/motion";
-
 /**
- * Route-level fade + slight rise, keyed on the pathname so App Router treats
- * each route as a distinct exit/enter pair. Kept deliberately understated —
- * this runs on every navigation, so anything bigger reads as sluggish rather
- * than premium.
+ * Used to wrap every route in an AnimatePresence-driven fade + slight rise,
+ * keyed on the pathname. Removed: confirmed via WebKit that this exact
+ * wrapper — a motion.div whose opacity/transform is driven by an
+ * AnimatePresence exit/enter cycle on every client-side navigation — reaches
+ * `opacity: 1` in computed style but never actually paints in Safari, making
+ * the entire route's content invisible until something else forces a
+ * browser repaint (e.g. a resize). Not scoped to any particular child
+ * animation (whileInView vs mount-time) — even content with no animation of
+ * its own was affected, since this wrapper sits above everything. A page
+ * transition is a cosmetic nicety; making every route unusable in Safari is
+ * not an acceptable trade for it.
  */
 export function PageTransition({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-
-  return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={pathname}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -8 }}
-        transition={{ duration: 0.28, ease: easeOut }}
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
-  );
+  return <>{children}</>;
 }
