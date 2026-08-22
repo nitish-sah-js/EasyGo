@@ -52,6 +52,20 @@ export function PlaceImage({
     setLoaded(false);
   }, [src]);
 
+  // The browser can finish fetching `src` — from cache, or just faster than
+  // hydration — before React attaches the `onLoad` listener below, since
+  // that only happens once this component actually mounts/hydrates. A
+  // load event that already fired is never redelivered, so without this
+  // check the image would sit at opacity-0 forever despite being fully
+  // loaded. `img.complete` is true for both success and failure, so a
+  // zero-size complete image (a 404, for instance) is still routed to
+  // `onError`'s path rather than treated as loaded.
+  const checkAlreadyLoaded = React.useCallback((img: HTMLImageElement | null) => {
+    if (!img || !img.complete) return;
+    if (img.naturalWidth > 0) setLoaded(true);
+    else setFailed(true);
+  }, []);
+
   const showPhoto = Boolean(src) && !failed;
   if (!showPhoto && fallback === "none") return null;
   const isLoadingPhoto = showPhoto && !loaded;
@@ -70,6 +84,7 @@ export function PlaceImage({
         // given as a remote pattern ahead of time.
         // eslint-disable-next-line @next/next/no-img-element
         <img
+          ref={checkAlreadyLoaded}
           src={src}
           alt={alt}
           {...(credit ? { title: credit } : {})}
