@@ -164,6 +164,7 @@ export async function deleteTrip(userId: string, tripId: string) {
 export async function getTripResult(userId: string, tripId: string): Promise<TripResultPayload> {
   const trip = await prisma.trip.findFirst({
     where: { id: tripId, userId },
+    relationLoadStrategy: "join",
     include: {
       preferences: true,
       planningJob: true,

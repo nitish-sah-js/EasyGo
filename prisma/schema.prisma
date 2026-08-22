@@ -4,7 +4,14 @@ generator client {
   // Prisma's generate-time OS detection to probe, so it defaults to guessing
   // "debian-openssl-1.1.x" — the wrong target for bookworm's actual
   // OpenSSL 3.0. Pinning both explicitly avoids relying on that detection.
-  binaryTargets = ["native", "debian-openssl-3.0.x"]
+  binaryTargets   = ["native", "debian-openssl-3.0.x"]
+  // Without this, a deeply nested `include` (trip result: preferences,
+  // routes, hotels, attractions, restaurants, weather, budget, itinerary →
+  // days → activities) issues one sequential SQL round trip per relation
+  // level instead of a single joined query — ~10 round trips, which is what
+  // was making GET /trips/:id/result take ~9s against a pooled/cross-region
+  // Postgres connection.
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {
