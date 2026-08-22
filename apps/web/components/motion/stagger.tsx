@@ -8,6 +8,7 @@ export interface StaggerGroupProps extends Omit<HTMLMotionProps<"div">, "variant
   /** Seconds between each child's entrance. */
   stagger?: number;
   delayChildren?: number;
+  /** See the `onMount` doc on `Reveal` — same default, same WebKit reason. */
   onMount?: boolean;
   as?: "div" | "ol" | "ul" | "section";
 }
@@ -22,7 +23,7 @@ export interface StaggerGroupProps extends Omit<HTMLMotionProps<"div">, "variant
 export function StaggerGroup({
   stagger = 0.08,
   delayChildren = 0,
-  onMount = false,
+  onMount = true,
   as = "div",
   className,
   children,

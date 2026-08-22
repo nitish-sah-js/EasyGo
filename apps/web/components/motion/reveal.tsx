@@ -10,18 +10,26 @@ export interface RevealProps extends Omit<HTMLMotionProps<"div">, "variants" | "
   variants?: RevealVariants;
   /** Extra delay (seconds) before this element's own transition starts. */
   delay?: number;
-  /** Render as a mount-time entrance instead of a scroll-triggered one — for above-the-fold content. */
+  /**
+   * Defaults to `true` (mount-time entrance) rather than scroll-triggered.
+   * `whileInView` (IntersectionObserver-driven) reliably never fires in
+   * Safari/WebKit for content that mounts via this app's client-side route
+   * transitions (AnimatePresence in PageTransition wraps every navigation) —
+   * confirmed: the element ends up with `opacity: 1` in computed style but
+   * never actually paints, so the section is invisible even though nothing
+   * looks wrong when inspected. Pass `false` only for content you've
+   * verified doesn't hit that path (e.g. truly static pages never reached
+   * via client-side nav), and re-test in Safari specifically.
+   */
   onMount?: boolean;
   as?: "div" | "section" | "li" | "article";
 }
 
 /**
- * Fade + slight upward reveal, triggered once when the element enters the
- * viewport (or immediately on mount for `onMount`, e.g. hero content that's
- * already on screen at load). The single building block for "section reveal"
- * across the site — compose with `StaggerGroup` for card grids.
+ * Fade + slight upward reveal. The single building block for "section
+ * reveal" across the site — compose with `StaggerGroup` for card grids.
  */
-export function Reveal({ variants = fadeUp, delay = 0, onMount = false, as = "div", className, children, ...props }: RevealProps) {
+export function Reveal({ variants = fadeUp, delay = 0, onMount = true, as = "div", className, children, ...props }: RevealProps) {
   // Framer merges a variant's own `transition` over this default rather than
   // replacing it, so `delay` (absent from the variant) survives while
   // `duration`/`ease` (present on the variant) still win — no need to clone
