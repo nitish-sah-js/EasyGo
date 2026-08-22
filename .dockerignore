@@ -9,4 +9,10 @@ coverage
 .env
 .env.local
 *.log
-apps/web
+apps/web/app
+apps/web/components
+apps/web/hooks
+apps/web/lib
+apps/web/services
+apps/web/types
+apps/web/public

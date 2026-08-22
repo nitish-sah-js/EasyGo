@@ -1,5 +1,10 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // The Docker image (node:22-bookworm-slim) has no `openssl` binary for
+  // Prisma's generate-time OS detection to probe, so it defaults to guessing
+  // "debian-openssl-1.1.x" — the wrong target for bookworm's actual
+  // OpenSSL 3.0. Pinning both explicitly avoids relying on that detection.
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {

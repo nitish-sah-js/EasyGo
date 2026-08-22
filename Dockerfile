@@ -12,15 +12,29 @@
 FROM node:22-bookworm-slim
 
 WORKDIR /app
-ENV NODE_ENV=production
 
-# Install with the full monorepo workspace manifest present so npm can
-# resolve/link @nexttour/shared, @nexttour/api and @nexttour/worker.
+# NOT setting NODE_ENV=production here: both services run straight off
+# `tsx` (no compile step — see the module comment above), and `tsx` is a
+# root devDependency. `npm install` treats NODE_ENV=production as "skip
+# devDependencies", which would leave `tsx` missing and both start scripts
+# failing with "tsx: not found". Railway supplies NODE_ENV=production as a
+# service variable at runtime instead, which the app itself reads.
+#
+# Install with every workspace's package.json present, including web's, so
+# npm can resolve the full workspace tree the lockfile describes.
+#
+# Deliberately `npm install`, not `npm ci`: the committed package-lock.json
+# was generated on macOS and is missing Linux-only optional-dependency
+# entries (e.g. @emnapi/core/runtime, pulled in by a native/napi package used
+# transitively). `npm ci` fails hard on that mismatch; `npm install`
+# reconciles it. Vercel's build (installCommand: npm install) hits the same
+# lockfile and already works for this reason.
 COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/package.json
 COPY apps/worker/package.json apps/worker/package.json
+COPY apps/web/package.json apps/web/package.json
 COPY packages/shared/package.json packages/shared/package.json
-RUN npm ci
+RUN npm install
 
 # Now bring in the rest of the source.
 COPY apps/api apps/api
