@@ -1,5 +1,3 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
-
 export class ApiClientError extends Error {
   constructor(
     message: string,
@@ -9,10 +7,14 @@ export class ApiClientError extends Error {
   }
 }
 
+// `path` is requested relative to this app's own origin (proxied to the API
+// via next.config.mjs rewrites) rather than an absolute cross-origin URL, so
+// the auth cookie is always first-party — see the rewrites comment for why
+// that matters (Safari's ITP silently drops genuinely cross-site cookies
+// even with SameSite=None; Secure).
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetch(path, {
     ...options,
-    credentials: "include",
     headers: {
       "Content-Type": "application/json",
       ...options.headers,

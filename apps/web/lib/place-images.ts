@@ -1,7 +1,7 @@
 import type { PlacePhoto } from "@nexttour/shared";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
-
+// Relative — proxied to the API via next.config.mjs rewrites, so these load
+// same-origin regardless of environment.
 /**
  * Photo URLs point at the API, not at Wikimedia.
  *
@@ -14,7 +14,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
  */
 export function placePhotoUrl(photo: PlacePhoto | undefined, width: number): string | undefined {
   if (!photo?.name) return undefined;
-  return `${API_URL}/api/places/photo?name=${encodeURIComponent(photo.name)}&w=${width}`;
+  return `/api/places/photo?name=${encodeURIComponent(photo.name)}&w=${width}`;
 }
 
 /** The first photo of a place, if Wikimedia Commons had one. */
@@ -30,7 +30,7 @@ export function firstPhotoUrl(
  * Wikimedia Commons search for the city.
  */
 export function cityPhotoUrl(city: string, width: number): string {
-  return `${API_URL}/api/places/city-photo?city=${encodeURIComponent(city)}&w=${width}`;
+  return `/api/places/city-photo?city=${encodeURIComponent(city)}&w=${width}`;
 }
 
 /** Most Commons licenses (e.g. CC BY-SA) require the photographer credit to travel with the image. */

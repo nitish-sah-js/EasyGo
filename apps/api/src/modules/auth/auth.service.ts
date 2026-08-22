@@ -16,16 +16,18 @@ function publicUser(user: { id: string; name: string; email: string }) {
 }
 
 /**
- * In production the web app (Vercel) and this API (e.g. Railway) are served from
- * different domains, so the browser treats every request between them as
- * cross-site. `SameSite=Lax` cookies are withheld from cross-site `fetch`/XHR
- * calls (only sent on top-level navigation), which would silently break auth
- * after login. `SameSite=None` restores that, and requires `Secure`.
+ * The web app (Vercel) and this API (Railway) are on different domains, but
+ * the browser never talks to this origin directly — every request is
+ * proxied through the web app's own origin (see apps/web/next.config.mjs
+ * rewrites), so from the browser's perspective this cookie is first-party.
+ * `SameSite=Lax` is correct and sufficient; it does NOT need `None`, which
+ * Safari's Intelligent Tracking Prevention silently drops for genuinely
+ * cross-site cookies regardless of the `Secure` flag.
  */
 const cookieOptions = {
   httpOnly: true,
   secure: env.NODE_ENV === "production",
-  sameSite: (env.NODE_ENV === "production" ? "none" : "lax") as "none" | "lax",
+  sameSite: "lax",
   path: "/",
 } as const;
 
