@@ -19,6 +19,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        {/* Every place/city photo redirects here — this app has no existing
+            connection to Wikimedia's CDN otherwise, so the first image on
+            any page pays a full DNS+TCP+TLS handshake before the browser
+            even starts the actual image fetch. Preconnecting overlaps that
+            handshake with the rest of page load instead. */}
+        <link rel="preconnect" href="https://upload.wikimedia.org" />
+        <link rel="dns-prefetch" href="https://upload.wikimedia.org" />
+      </head>
       <body className={inter.className}>
         <JourneyLoader />
         <QueryProvider>
